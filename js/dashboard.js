@@ -36,12 +36,11 @@ async function initDashboard() {
             loadUserSettings()
         ]);
         
-        // ตรวจสอบและสร้างข้อมูลตัวอย่างถ้าไม่มีข้อมูล
-        if (transactions.length === 0) {
-            // ไม่พบข้อมูลรายการ กำลังสร้างข้อมูลตัวอย่าง
-            await createSampleData(user.uid);
-            await loadTransactions(); // โหลดข้อมูลใหม่
-        }
+        // ไม่สร้างข้อมูลตัวอย่างอัตโนมัติ - ให้ผู้ใช้เพิ่มข้อมูลเอง
+        // if (transactions.length === 0) {
+        //     await createSampleData(user.uid);
+        //     await loadTransactions();
+        // }
         
         // เริ่มต้น UI
         setupEventListeners();
@@ -1419,7 +1418,7 @@ function initializeChart() {
                         },
                         title: {
                             display: true,
-                            text: transactions.length === 0 ? 'สถิติรายเดือน (ข้อมูลตัวอย่าง)' : 'สถิติรายเดือน',
+                            text: 'สถิติรายเดือน',
                             font: {
                                 size: 16,
                                 weight: 'bold'
@@ -1464,7 +1463,7 @@ function initializeChart() {
             
             // แสดงการแจ้งเตือนถ้าไม่มีข้อมูล
             if (transactions.length === 0) {
-                showNotification('ไม่พบข้อมูลรายการ กราฟแสดงข้อมูลตัวอย่าง', 'info');
+                showNotification('ไม่พบข้อมูลรายการ กรุณาเพิ่มรายการเพื่อดูสถิติ', 'info');
             }
             
             // ตั้งค่าวันที่เริ่มต้นในตัวเลือกเดือน
@@ -1491,7 +1490,7 @@ function getMonthlyChartData(selectedMonth = null) {
     const incomeData = [];
     const expenseData = [];
     
-    // ถ้าไม่มีข้อมูล ให้แสดงข้อมูลตัวอย่าง
+    // ถ้าไม่มีข้อมูล ให้แสดงข้อมูลว่าง
     if (transactions.length === 0) {
         if (!selectedMonth) {
             // แสดง 6 เดือนย้อนหลัง
@@ -1502,9 +1501,9 @@ function getMonthlyChartData(selectedMonth = null) {
                 const monthName = date.toLocaleDateString('th-TH', { month: 'short' });
                 months.push(monthName);
                 
-                // ข้อมูลตัวอย่าง
-                incomeData.push(Math.floor(Math.random() * 50000) + 10000);
-                expenseData.push(Math.floor(Math.random() * 30000) + 5000);
+                // ข้อมูลว่าง
+                incomeData.push(0);
+                expenseData.push(0);
             }
         } else {
             // แสดงข้อมูลของเดือนที่เลือก
@@ -1517,9 +1516,9 @@ function getMonthlyChartData(selectedMonth = null) {
             });
             months.push(monthName);
             
-            // ข้อมูลตัวอย่าง
-            incomeData.push(Math.floor(Math.random() * 50000) + 10000);
-            expenseData.push(Math.floor(Math.random() * 30000) + 5000);
+            // ข้อมูลว่าง
+            incomeData.push(0);
+            expenseData.push(0);
         }
     } else {
         // ถ้าไม่ได้เลือกเดือน ให้แสดง 6 เดือนย้อนหลัง
@@ -1609,14 +1608,10 @@ function updateMonthlyChart() {
         
         // อัปเดตชื่อกราฟ
         if (selectedMonth) {
-            const titleText = transactions.length === 0 
-                ? `สถิติรายเดือน - ${chartData.labels[0]} (ข้อมูลตัวอย่าง)`
-                : `สถิติรายเดือน - ${chartData.labels[0]}`;
+            const titleText = `สถิติรายเดือน - ${chartData.labels[0]}`;
             monthlyChart.options.plugins.title.text = titleText;
         } else {
-            const titleText = transactions.length === 0 
-                ? 'สถิติรายเดือน (ข้อมูลตัวอย่าง)'
-                : 'สถิติรายเดือน';
+            const titleText = 'สถิติรายเดือน';
             monthlyChart.options.plugins.title.text = titleText;
         }
         
@@ -1624,15 +1619,11 @@ function updateMonthlyChart() {
         
         // แสดงการแจ้งเตือน
         if (selectedMonth) {
-            const message = transactions.length === 0 
-                ? `อัปเดตกราฟสำหรับเดือน ${chartData.labels[0]} (ข้อมูลตัวอย่าง)`
-                : `อัปเดตกราฟสำหรับเดือน ${chartData.labels[0]} แล้ว`;
-            showNotification(message, transactions.length === 0 ? 'info' : 'success');
+            const message = `อัปเดตกราฟสำหรับเดือน ${chartData.labels[0]} แล้ว`;
+            showNotification(message, 'success');
         } else {
-            const message = transactions.length === 0 
-                ? 'อัปเดตกราฟรายเดือน (ข้อมูลตัวอย่าง)'
-                : 'อัปเดตกราฟรายเดือนแล้ว';
-            showNotification(message, transactions.length === 0 ? 'info' : 'success');
+            const message = 'อัปเดตกราฟรายเดือนแล้ว';
+            showNotification(message, 'success');
         }
     }
 }
