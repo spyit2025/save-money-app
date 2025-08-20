@@ -36,13 +36,13 @@ function validatePassword(password) {
 
 // การตั้งค่า Firebase สำหรับแอพออมเงิน
 const firebaseConfig = {
-    apiKey: "AIzaSyDVdFnEfNoImZ_JISEfsBsjcUcCtIcsVkE",
-    authDomain: "save-money-app-3a5ac.firebaseapp.com",
-    projectId: "save-money-app-3a5ac",
-    storageBucket: "save-money-app-3a5ac.firebasestorage.app",
-    messagingSenderId: "240747947950",
-    appId: "1:240747947950:web:767ea89348bb892a580a3f",
-    measurementId: "G-Y249PYTSJW"
+    apiKey: "AIzaSyAwU1TprM3YZ5vbf9tg19zSJqRxbUyNL24",
+    authDomain: "save-money-app-3cc2a.firebaseapp.com",
+    projectId: "save-money-app-3cc2a",
+    storageBucket: "save-money-app-3cc2a.firebasestorage.app",
+    messagingSenderId: "288105338186",
+    appId: "1:288105338186:web:62826d370ba3c9a1dc5db3",
+    measurementId: "G-LY562KHEW6"
 };
 
 // ตรวจสอบ environment และ domain
