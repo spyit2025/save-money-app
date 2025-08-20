@@ -2338,7 +2338,19 @@ function updateGoalsData() {
                 `;
             } else {
                 goalsListHtml = `
-                    <div class="row mt-4">
+                    <!-- Mobile Search Container for Goals -->
+                    <div class="mobile-goals-search-container mb-3" style="display: none;">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="mobileGoalsSearchInput" placeholder="ค้นหาเป้าหมาย..." aria-label="ค้นหาเป้าหมาย">
+                            <button class="btn btn-outline-secondary" type="button" id="mobileGoalsSearchClear" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row mt-4" id="goalsContainer">
                         ${goals.map(goal => {
                             const progress = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
                             const progressColor = progress >= 100 ? 'success' : progress >= 75 ? 'info' : progress >= 50 ? 'warning' : 'danger';
@@ -2480,6 +2492,11 @@ function updateGoalsData() {
                     </div>
                 </div>
             `;
+        }
+        
+        // เพิ่ม Event Listeners สำหรับ Mobile Search (เฉพาะเมื่อมีเป้าหมาย)
+        if (totalGoals > 0) {
+            setupMobileGoalsSearch();
         }
         
     } catch (error) {
@@ -3884,5 +3901,117 @@ function filterMobileTransactions(searchTerm, mobileCardsContainer, allTransacti
         
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการกรองข้อมูล Mobile Cards:', error);
+    }
+}
+
+// ฟังก์ชันสำหรับตั้งค่า Mobile Search สำหรับเป้าหมาย
+function setupMobileGoalsSearch() {
+    try {
+        const searchContainer = document.querySelector('.mobile-goals-search-container');
+        const searchInput = document.getElementById('mobileGoalsSearchInput');
+        const clearButton = document.getElementById('mobileGoalsSearchClear');
+        
+        if (!searchContainer || !searchInput || !clearButton) return;
+        
+        // แสดง search container เฉพาะบนมือถือ
+        if (window.innerWidth <= 768) {
+            searchContainer.style.display = 'block';
+        } else {
+            searchContainer.style.display = 'none';
+        }
+        
+        // Event listener สำหรับการค้นหา
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            filterMobileGoals(searchTerm);
+            
+            // แสดง/ซ่อนปุ่มล้าง
+            clearButton.style.display = searchTerm ? 'block' : 'none';
+        });
+        
+        // Event listener สำหรับปุ่มล้าง
+        clearButton.addEventListener('click', () => {
+            searchInput.value = '';
+            filterMobileGoals('');
+            clearButton.style.display = 'none';
+            searchInput.focus();
+        });
+        
+        // Event listener สำหรับการเปลี่ยนขนาดหน้าจอ
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                searchContainer.style.display = 'block';
+            } else {
+                searchContainer.style.display = 'none';
+            }
+        });
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการตั้งค่า Mobile Search สำหรับเป้าหมาย:', error);
+    }
+}
+
+// ฟังก์ชันสำหรับกรองข้อมูลเป้าหมายใน Mobile
+function filterMobileGoals(searchTerm) {
+    try {
+        const goalsContainer = document.getElementById('goalsContainer');
+        if (!goalsContainer) return;
+        
+        const goalCards = goalsContainer.querySelectorAll('.col-md-6');
+        
+        if (!searchTerm) {
+            // แสดงทั้งหมด
+            goalCards.forEach(card => {
+                card.style.display = 'block';
+            });
+            return;
+        }
+        
+        // กรองข้อมูลตามคำค้นหา
+        goalCards.forEach(card => {
+            const title = card.querySelector('h6')?.textContent?.toLowerCase() || '';
+            const description = card.querySelector('small')?.textContent?.toLowerCase() || '';
+            const category = card.querySelector('small')?.textContent?.toLowerCase() || '';
+            const amount = card.querySelector('.fw-bold')?.textContent?.toLowerCase() || '';
+            
+            const matches = 
+                title.includes(searchTerm) ||
+                description.includes(searchTerm) ||
+                category.includes(searchTerm) ||
+                amount.includes(searchTerm);
+            
+            card.style.display = matches ? 'block' : 'none';
+        });
+        
+        // ตรวจสอบว่ามีเป้าหมายที่แสดงอยู่หรือไม่
+        const visibleCards = Array.from(goalCards).filter(card => card.style.display !== 'none');
+        
+        if (visibleCards.length === 0) {
+            // แสดงข้อความเมื่อไม่พบข้อมูล
+            const noResultsHtml = `
+                <div class="col-12">
+                    <div class="text-center mt-4">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">ไม่พบเป้าหมายที่ตรงกับคำค้นหา</h6>
+                        <p class="text-muted mb-3">ลองค้นหาด้วยคำอื่น</p>
+                    </div>
+                </div>
+            `;
+            
+            // ตรวจสอบว่ามีข้อความ "ไม่พบข้อมูล" อยู่แล้วหรือไม่
+            const existingNoResults = goalsContainer.querySelector('.col-12 .text-center');
+            if (!existingNoResults) {
+                goalsContainer.innerHTML = noResultsHtml;
+            }
+        } else {
+            // ลบข้อความ "ไม่พบข้อมูล" ถ้ามี
+            const existingNoResults = goalsContainer.querySelector('.col-12 .text-center');
+            if (existingNoResults && existingNoResults.querySelector('.fas.fa-search')) {
+                existingNoResults.remove();
+            }
+        }
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการกรองข้อมูลเป้าหมาย:', error);
     }
 }
