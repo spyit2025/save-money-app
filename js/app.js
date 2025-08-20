@@ -63,37 +63,7 @@ function setupRegisterForm() {
     }
 }
 
-// ฟังก์ชันสำหรับการจัดการปุ่มแสดง/ซ่อนรหัสผ่าน
-function setupPasswordToggle() {
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
-    
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            const icon = togglePassword.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
-        });
-    }
-    
-    // สำหรับฟอร์มสมัครสมาชิก
-    const toggleRegisterPassword = document.getElementById('toggleRegisterPassword');
-    const registerPasswordInput = document.getElementById('registerPassword');
-    
-    if (toggleRegisterPassword && registerPasswordInput) {
-        toggleRegisterPassword.addEventListener('click', () => {
-            const type = registerPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            registerPasswordInput.setAttribute('type', type);
-            
-            const icon = toggleRegisterPassword.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
-        });
-    }
-}
+// ฟังก์ชัน setupPasswordToggle ถูกย้ายไปยัง auth.js เพื่อป้องกันการซ้ำซ้อน
 
 // ฟังก์ชันสำหรับการจัดการการลืมรหัสผ่าน
 function setupForgotPassword() {
@@ -328,7 +298,7 @@ function initApp() {
     if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
         setupLoginForm();
         setupRegisterForm();
-        setupPasswordToggle();
+        // setupPasswordToggle ถูกย้ายไปยัง auth.js
         setupForgotPassword();
     }
 }

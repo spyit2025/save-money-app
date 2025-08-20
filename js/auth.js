@@ -399,17 +399,57 @@ function setupLogoutButton() {
 
 // ฟังก์ชันสำหรับการจัดการปุ่มแสดง/ซ่อนรหัสผ่าน
 function setupPasswordToggle() {
+    // ป้องกันการตั้งค่า event listener ซ้ำ
+    if (window.passwordToggleInitialized) {
+        return;
+    }
+    
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
     
     if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', () => {
+        // ลบ event listener เก่าก่อน (ถ้ามี)
+        const newTogglePassword = togglePassword.cloneNode(true);
+        togglePassword.parentNode.replaceChild(newTogglePassword, togglePassword);
+        
+        newTogglePassword.addEventListener('click', () => {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
             
-            const icon = togglePassword.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+            const icon = newTogglePassword.querySelector('i');
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+        
+        window.passwordToggleInitialized = true;
+    }
+    
+    // สำหรับฟอร์มสมัครสมาชิก
+    const toggleRegisterPassword = document.getElementById('toggleRegisterPassword');
+    const registerPasswordInput = document.getElementById('registerPassword');
+    
+    if (toggleRegisterPassword && registerPasswordInput) {
+        // ลบ event listener เก่าก่อน (ถ้ามี)
+        const newToggleRegisterPassword = toggleRegisterPassword.cloneNode(true);
+        toggleRegisterPassword.parentNode.replaceChild(newToggleRegisterPassword, toggleRegisterPassword);
+        
+        newToggleRegisterPassword.addEventListener('click', () => {
+            const type = registerPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            registerPasswordInput.setAttribute('type', type);
+            
+            const icon = newToggleRegisterPassword.querySelector('i');
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         });
     }
 }
