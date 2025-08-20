@@ -73,6 +73,22 @@ async function loadCategories() {
             ...doc.data()
         }));
         
+        // ตรวจสอบและลบหมวดหมู่ที่ซ้ำกัน
+        await removeDuplicateCategories(user.uid);
+        
+        // โหลดหมวดหมู่ใหม่หลังจากลบที่ซ้ำ
+        const updatedCategoriesSnapshot = await db
+            .collection('users')
+            .doc(user.uid)
+            .collection('categories')
+            .orderBy('order')
+            .get();
+        
+        categories = updatedCategoriesSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
         // โหลดหมวดหมู่สำเร็จ
         
         // แสดง/ซ่อนปุ่มสร้างหมวดหมู่
@@ -106,6 +122,55 @@ async function loadCategories() {
     } catch (error) {
         console.error('ข้อผิดพลาดในการโหลดหมวดหมู่:', error);
         showNotification('ไม่สามารถโหลดหมวดหมู่ได้', 'danger');
+    }
+}
+
+// ฟังก์ชันสำหรับลบหมวดหมู่ที่ซ้ำกัน
+async function removeDuplicateCategories(userId) {
+    try {
+        const categoriesSnapshot = await db
+            .collection('users')
+            .doc(userId)
+            .collection('categories')
+            .get();
+        
+        const categories = categoriesSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        // หาหมวดหมู่ที่ซ้ำกัน
+        const seen = new Set();
+        const duplicates = [];
+        
+        categories.forEach(category => {
+            const key = `${category.name}-${category.type}`;
+            if (seen.has(key)) {
+                duplicates.push(category);
+            } else {
+                seen.add(key);
+            }
+        });
+        
+        // ลบหมวดหมู่ที่ซ้ำกัน
+        if (duplicates.length > 0) {
+            const batch = db.batch();
+            
+            duplicates.forEach(category => {
+                const categoryRef = db
+                    .collection('users')
+                    .doc(userId)
+                    .collection('categories')
+                    .doc(category.id);
+                batch.delete(categoryRef);
+            });
+            
+            await batch.commit();
+            console.log(`ลบหมวดหมู่ที่ซ้ำกัน ${duplicates.length} รายการ`);
+        }
+        
+    } catch (error) {
+        console.error('ข้อผิดพลาดในการลบหมวดหมู่ที่ซ้ำกัน:', error);
     }
 }
 
@@ -1861,8 +1926,20 @@ function updateCategoryOptions() {
         const selectedType = transactionType.value;
         const filteredCategories = categories.filter(cat => cat.type === selectedType);
         
-        categorySelect.innerHTML = '<option value="">เลือกหมวดหมู่</option>';
+        // ลบหมวดหมู่ที่ซ้ำกันในตัวเลือก
+        const uniqueCategories = [];
+        const seen = new Set();
+        
         filteredCategories.forEach(category => {
+            const key = category.name;
+            if (!seen.has(key)) {
+                seen.add(key);
+                uniqueCategories.push(category);
+            }
+        });
+        
+        categorySelect.innerHTML = '<option value="">เลือกหมวดหมู่</option>';
+        uniqueCategories.forEach(category => {
             const isSelected = category.id === currentSelectedValue ? 'selected' : '';
             categorySelect.innerHTML += `
                 <option value="${category.id}" ${isSelected}>${category.name}</option>
