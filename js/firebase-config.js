@@ -45,6 +45,21 @@ const firebaseConfig = {
     measurementId: "G-Y249PYTSJW"
 };
 
+// ตรวจสอบ environment และ domain
+function checkEnvironment() {
+    const currentDomain = window.location.hostname;
+    const isLocalhost = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
+    const isGitHubPages = currentDomain.includes('github.io');
+    const isHttps = window.location.protocol === 'https:';
+    
+    console.log('Current domain:', currentDomain);
+    console.log('Is localhost:', isLocalhost);
+    console.log('Is GitHub Pages:', isGitHubPages);
+    console.log('Is HTTPS:', isHttps);
+    
+    return { isLocalhost, isGitHubPages, isHttps };
+}
+
 // เริ่มต้น Firebase
 let app;
 try {
@@ -100,6 +115,49 @@ try {
     // Analytics not available
 }
 
+// ฟังก์ชันสำหรับการทดสอบการเชื่อมต่อ Firestore
+async function testFirestoreConnection() {
+    const env = checkEnvironment();
+    
+    try {
+        // ทดสอบการเขียนข้อมูลชั่วคราว
+        const testDoc = db.collection('_test_connection').doc('test');
+        await testDoc.set({
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            domain: window.location.hostname,
+            protocol: window.location.protocol,
+            userAgent: navigator.userAgent
+        });
+        
+        // ลบข้อมูลทดสอบ
+        await testDoc.delete();
+        
+        console.log('✅ Firestore connection test successful');
+        return true;
+    } catch (error) {
+        console.error('❌ Firestore connection test failed:', error);
+        
+        // แสดงข้อผิดพลาดที่เฉพาะเจาะจง
+        if (error.code === 'permission-denied') {
+            console.error('🔒 Permission denied - Check Firestore Security Rules');
+            console.error('💡 Make sure your domain is allowed in Firebase Console');
+            console.error('🌐 Current domain:', window.location.hostname);
+            
+            if (env.isGitHubPages) {
+                console.error('📝 For GitHub Pages, add these domains to Firebase Console:');
+                console.error('   - spyit2025.github.io');
+                console.error('   - *.github.io (if using custom domain)');
+            }
+        } else if (error.code === 'unavailable') {
+            console.error('🌐 Network unavailable - Check internet connection');
+        } else if (error.code === 'unauthenticated') {
+            console.error('🔐 User not authenticated');
+        }
+        
+        return false;
+    }
+}
+
 // ฟังก์ชันสำหรับการจัดการข้อผิดพลาด
 function handleFirebaseError(error) {
     console.error('Firebase Error:', error);
@@ -123,7 +181,10 @@ function handleFirebaseError(error) {
             errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
             break;
         case 'permission-denied':
-            errorMessage = 'ไม่มีสิทธิ์เข้าถึงข้อมูล';
+            errorMessage = 'ไม่มีสิทธิ์เข้าถึงข้อมูล - กรุณาตรวจสอบการตั้งค่า Firebase';
+            console.error('🔒 Permission denied error detected');
+            console.error('🌐 Current domain:', window.location.hostname);
+            console.error('💡 Check Firebase Console > Authentication > Settings > Authorized domains');
             break;
         case 'unavailable':
             errorMessage = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้';
@@ -161,6 +222,28 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
+// ทดสอบการเชื่อมต่อเมื่อโหลดหน้า
+document.addEventListener('DOMContentLoaded', async () => {
+    const env = checkEnvironment();
+    
+    // รอให้ Firebase พร้อมใช้งาน
+    setTimeout(async () => {
+        const connectionTest = await testFirestoreConnection();
+        
+        if (!connectionTest) {
+            if (env.isGitHubPages) {
+                showNotification('⚠️ ตรวจพบปัญหาการเชื่อมต่อ Firebase กรุณาตรวจสอบการตั้งค่า', 'warning');
+                console.error('🔧 Troubleshooting steps for GitHub Pages:');
+                console.error('1. Go to Firebase Console > Authentication > Settings');
+                console.error('2. Add "spyit2025.github.io" to Authorized domains');
+                console.error('3. Check Firestore Security Rules');
+            }
+        } else {
+            console.log('✅ Firebase connection verified');
+        }
+    }, 2000);
+});
+
 // Firebase พร้อมใช้งาน
 // Firebase config loaded successfully
 
@@ -173,5 +256,7 @@ window.firebaseConfig = {
     showNotification,
     sanitizeInput,
     validateEmail,
-    validatePassword
+    validatePassword,
+    testFirestoreConnection,
+    checkEnvironment
 };
