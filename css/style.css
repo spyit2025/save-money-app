@@ -1165,6 +1165,50 @@ body {
     }
 }
 
+/* ===== Mobile Pagination ===== */
+.mobile-pagination {
+    background: var(--light);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-pagination .btn {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.mobile-pagination .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mobile-pagination .btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-pagination span {
+    font-weight: 500;
+    color: var(--dark);
+}
+
+/* ปรับแต่ง Mobile Cards Page */
+.mobile-cards-page {
+    transition: opacity 0.3s ease;
+}
+
+.mobile-cards-page.fade-out {
+    opacity: 0;
+}
+
+.mobile-cards-page.fade-in {
+    opacity: 1;
+}
+
 /* ===== Animation ===== */
 @keyframes fadeIn {
     from {

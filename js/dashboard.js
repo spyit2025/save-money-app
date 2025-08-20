@@ -1132,11 +1132,56 @@ function createMobileTableCards() {
             `;
             mobileCardsContainer.appendChild(noDataCard);
         } else {
-            // สร้าง cards สำหรับแต่ละ transaction
-            transactions.forEach(transaction => {
+            // ระบบ Pagination สำหรับ Mobile Cards
+            const itemsPerPage = 5;
+            const totalPages = Math.ceil(transactions.length / itemsPerPage);
+            
+            // สร้าง container สำหรับ cards ที่แสดงในหน้าปัจจุบัน
+            const cardsPageContainer = document.createElement('div');
+            cardsPageContainer.className = 'mobile-cards-page';
+            cardsPageContainer.setAttribute('data-current-page', '1');
+            
+            // แสดง cards เฉพาะหน้าปัจจุบัน
+            const startIndex = 0;
+            const endIndex = Math.min(itemsPerPage, transactions.length);
+            const currentPageTransactions = transactions.slice(startIndex, endIndex);
+            
+            currentPageTransactions.forEach(transaction => {
                 const card = createTransactionCard(transaction);
-                mobileCardsContainer.appendChild(card);
+                cardsPageContainer.appendChild(card);
             });
+            
+            mobileCardsContainer.appendChild(cardsPageContainer);
+            
+            // เพิ่ม Pagination Controls ถ้ามีมากกว่า 1 หน้า
+            if (totalPages > 1) {
+                const paginationContainer = document.createElement('div');
+                paginationContainer.className = 'mobile-pagination d-flex justify-content-center align-items-center mt-3';
+                
+                // ปุ่มหน้าก่อนหน้า
+                const prevButton = document.createElement('button');
+                prevButton.className = 'btn btn-outline-primary btn-sm me-2';
+                prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> หน้าก่อนหน้า';
+                prevButton.disabled = true;
+                prevButton.onclick = () => changeMobilePage(-1, totalPages, transactions, mobileCardsContainer, paginationContainer);
+                
+                // แสดงหน้าปัจจุบัน
+                const pageInfo = document.createElement('span');
+                pageInfo.className = 'mx-3 text-muted';
+                pageInfo.textContent = `หน้า 1 จาก ${totalPages}`;
+                
+                // ปุ่มหน้าถัดไป
+                const nextButton = document.createElement('button');
+                nextButton.className = 'btn btn-outline-primary btn-sm ms-2';
+                nextButton.innerHTML = 'หน้าถัดไป <i class="fas fa-chevron-right"></i>';
+                nextButton.onclick = () => changeMobilePage(1, totalPages, transactions, mobileCardsContainer, paginationContainer);
+                
+                paginationContainer.appendChild(prevButton);
+                paginationContainer.appendChild(pageInfo);
+                paginationContainer.appendChild(nextButton);
+                
+                mobileCardsContainer.appendChild(paginationContainer);
+            }
         }
         
         // เพิ่ม mobile cards ลงใน container
@@ -3388,11 +3433,56 @@ function createMobileTableCardsPage() {
             `;
             mobileCardsContainer.appendChild(noDataCard);
         } else {
-            // สร้าง cards สำหรับแต่ละ transaction
-            transactions.forEach(transaction => {
+            // ระบบ Pagination สำหรับ Mobile Cards
+            const itemsPerPage = 5;
+            const totalPages = Math.ceil(transactions.length / itemsPerPage);
+            
+            // สร้าง container สำหรับ cards ที่แสดงในหน้าปัจจุบัน
+            const cardsPageContainer = document.createElement('div');
+            cardsPageContainer.className = 'mobile-cards-page';
+            cardsPageContainer.setAttribute('data-current-page', '1');
+            
+            // แสดง cards เฉพาะหน้าปัจจุบัน
+            const startIndex = 0;
+            const endIndex = Math.min(itemsPerPage, transactions.length);
+            const currentPageTransactions = transactions.slice(startIndex, endIndex);
+            
+            currentPageTransactions.forEach(transaction => {
                 const card = createTransactionCard(transaction);
-                mobileCardsContainer.appendChild(card);
+                cardsPageContainer.appendChild(card);
             });
+            
+            mobileCardsContainer.appendChild(cardsPageContainer);
+            
+            // เพิ่ม Pagination Controls ถ้ามีมากกว่า 1 หน้า
+            if (totalPages > 1) {
+                const paginationContainer = document.createElement('div');
+                paginationContainer.className = 'mobile-pagination d-flex justify-content-center align-items-center mt-3';
+                
+                // ปุ่มหน้าก่อนหน้า
+                const prevButton = document.createElement('button');
+                prevButton.className = 'btn btn-outline-primary btn-sm me-2';
+                prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> หน้าก่อนหน้า';
+                prevButton.disabled = true;
+                prevButton.onclick = () => changeMobilePage(-1, totalPages, transactions, mobileCardsContainer, paginationContainer);
+                
+                // แสดงหน้าปัจจุบัน
+                const pageInfo = document.createElement('span');
+                pageInfo.className = 'mx-3 text-muted';
+                pageInfo.textContent = `หน้า 1 จาก ${totalPages}`;
+                
+                // ปุ่มหน้าถัดไป
+                const nextButton = document.createElement('button');
+                nextButton.className = 'btn btn-outline-primary btn-sm ms-2';
+                nextButton.innerHTML = 'หน้าถัดไป <i class="fas fa-chevron-right"></i>';
+                nextButton.onclick = () => changeMobilePage(1, totalPages, transactions, mobileCardsContainer, paginationContainer);
+                
+                paginationContainer.appendChild(prevButton);
+                paginationContainer.appendChild(pageInfo);
+                paginationContainer.appendChild(nextButton);
+                
+                mobileCardsContainer.appendChild(paginationContainer);
+            }
         }
         
         // เพิ่ม mobile cards ลงใน container
@@ -3400,6 +3490,66 @@ function createMobileTableCardsPage() {
         
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการสร้าง Mobile Cards หน้า Transactions:', error);
+    }
+}
+
+// ฟังก์ชันสำหรับเปลี่ยนหน้า Mobile Cards
+function changeMobilePage(direction, totalPages, transactions, mobileCardsContainer, paginationContainer) {
+    try {
+        const itemsPerPage = 5;
+        const currentPageElement = mobileCardsContainer.querySelector('.mobile-cards-page');
+        const currentPage = parseInt(currentPageElement.getAttribute('data-current-page'));
+        const newPage = currentPage + direction;
+        
+        // ตรวจสอบขอบเขต
+        if (newPage < 1 || newPage > totalPages) {
+            return;
+        }
+        
+        // คำนวณ index สำหรับหน้าใหม่
+        const startIndex = (newPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, transactions.length);
+        const currentPageTransactions = transactions.slice(startIndex, endIndex);
+        
+        // เพิ่ม animation fade-out
+        currentPageElement.classList.add('fade-out');
+        
+        // รอ animation เสร็จแล้วค่อยเปลี่ยนเนื้อหา
+        setTimeout(() => {
+            // ลบ cards เดิม
+            currentPageElement.innerHTML = '';
+            currentPageElement.setAttribute('data-current-page', newPage.toString());
+            
+            // สร้าง cards ใหม่
+            currentPageTransactions.forEach(transaction => {
+                const card = createTransactionCard(transaction);
+                currentPageElement.appendChild(card);
+            });
+            
+            // เพิ่ม animation fade-in
+            currentPageElement.classList.remove('fade-out');
+            currentPageElement.classList.add('fade-in');
+            
+            // ลบ fade-in class หลังจาก animation เสร็จ
+            setTimeout(() => {
+                currentPageElement.classList.remove('fade-in');
+            }, 300);
+        }, 150);
+        
+        // อัปเดต Pagination Controls
+        const prevButton = paginationContainer.querySelector('button:first-child');
+        const nextButton = paginationContainer.querySelector('button:last-child');
+        const pageInfo = paginationContainer.querySelector('span');
+        
+        // อัปเดตสถานะปุ่ม
+        prevButton.disabled = newPage === 1;
+        nextButton.disabled = newPage === totalPages;
+        
+        // อัปเดตข้อความหน้า
+        pageInfo.textContent = `หน้า ${newPage} จาก ${totalPages}`;
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการเปลี่ยนหน้า Mobile Cards:', error);
     }
 }
 
