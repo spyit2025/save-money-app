@@ -1767,6 +1767,9 @@ function showTransactionModal(transactionId = null) {
     
     // จัดการ focus เมื่อ Modal เปิด
     modalElement.addEventListener('shown.bs.modal', function () {
+        // ลบ aria-hidden เมื่อ modal เปิด
+        modalElement.removeAttribute('aria-hidden');
+        
         const firstInput = modalElement.querySelector('input, select, textarea');
         if (firstInput) {
             firstInput.focus();
@@ -1775,6 +1778,9 @@ function showTransactionModal(transactionId = null) {
     
     // จัดการ focus เมื่อ Modal ปิด
     modalElement.addEventListener('hidden.bs.modal', function () {
+        // เพิ่ม aria-hidden เมื่อ modal ปิด
+        modalElement.setAttribute('aria-hidden', 'true');
+        
         // ย้าย focus ไปยัง element ที่ปลอดภัยนอก modal
         const safeFocusElement = document.querySelector('body') || document.documentElement;
         if (safeFocusElement) {
@@ -2347,6 +2353,9 @@ function showGoalModal() {
     
     // จัดการ focus เมื่อ Modal เปิด
     modalElement.addEventListener('shown.bs.modal', function () {
+        // ลบ aria-hidden เมื่อ modal เปิด
+        modalElement.removeAttribute('aria-hidden');
+        
         const firstInput = modalElement.querySelector('input, select, textarea');
         if (firstInput) {
             firstInput.focus();
@@ -2355,6 +2364,9 @@ function showGoalModal() {
     
     // จัดการ focus เมื่อ Modal ปิด
     modalElement.addEventListener('hidden.bs.modal', function () {
+        // เพิ่ม aria-hidden เมื่อ modal ปิด
+        modalElement.setAttribute('aria-hidden', 'true');
+        
         // ย้าย focus ไปยัง element ที่ปลอดภัยนอก modal
         const safeFocusElement = document.querySelector('body') || document.documentElement;
         if (safeFocusElement) {
