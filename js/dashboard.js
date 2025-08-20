@@ -130,9 +130,12 @@ async function loadTransactions() {
             return {
                 id: doc.id,
                 ...data,
-                date: data.date.toDate(),
-                createdAt: data.createdAt ? data.createdAt.toDate() : null,
-                updatedAt: data.updatedAt ? data.updatedAt.toDate() : null
+                date: data.date && typeof data.date.toDate === 'function' ? data.date.toDate() : 
+                      data.date ? new Date(data.date) : new Date(),
+                createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : 
+                          data.createdAt ? new Date(data.createdAt) : null,
+                updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function' ? data.updatedAt.toDate() : 
+                          data.updatedAt ? new Date(data.updatedAt) : null
             };
         });
         
@@ -164,9 +167,12 @@ async function loadGoals() {
             return {
                 id: doc.id,
                 ...data,
-                targetDate: data.targetDate.toDate(),
-                createdAt: data.createdAt ? data.createdAt.toDate() : null,
-                updatedAt: data.updatedAt ? data.updatedAt.toDate() : null
+                targetDate: data.targetDate && typeof data.targetDate.toDate === 'function' ? data.targetDate.toDate() : 
+                           data.targetDate ? new Date(data.targetDate) : new Date(),
+                createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : 
+                          data.createdAt ? new Date(data.createdAt) : null,
+                updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function' ? data.updatedAt.toDate() : 
+                          data.updatedAt ? new Date(data.updatedAt) : null
             };
         });
         

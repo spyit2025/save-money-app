@@ -40,11 +40,27 @@ if %errorlevel% neq 0 (
 echo [OK] พบ Git remote
 echo.
 
+echo กำลังตรวจสอบการเปลี่ยนแปลง...
+git status --porcelain >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [INFO] พบการเปลี่ยนแปลงในไฟล์
+) else (
+    echo [INFO] ไม่มีการเปลี่ยนแปลง
+    echo ต้องการ deploy ต่อไปหรือไม่? (y/n)
+    set /p choice=
+    if /i "%choice%" neq "y" (
+        echo Deploy ถูกยกเลิก
+        pause
+        exit /b 0
+    )
+)
+
+echo.
 echo กำลังเพิ่มไฟล์ทั้งหมด...
 git add .
 
 echo กำลัง commit changes...
-git commit -m "Update Save Money App - %date% %time%"
+git commit -m "Fix: data.date.toDate error and improve date handling - %date% %time%"
 
 echo กำลัง push ไปยัง GitHub...
 git push origin main
@@ -54,12 +70,23 @@ if %errorlevel% equ 0 (
     echo ========================================
     echo    [SUCCESS] Deploy สำเร็จ!
     echo ========================================
+    echo.
+    echo การแก้ไขล่าสุด:
+    echo - แก้ไขปัญหา data.date.toDate is not a function
+    echo - ปรับปรุงการจัดการข้อมูลวันที่จาก Firestore
+    echo - เพิ่มการตรวจสอบประเภทข้อมูลก่อนเรียกใช้ .toDate()
+    echo.
     echo แอปของคุณจะถูก deploy ที่:
-    echo https://kengkajm.github.io
+    echo https://spyit2025.github.io/save-money-app/
     echo หรือ
-    echo https://kengkajm.github.io/save-money-app
+    echo https://spyit2025.github.io/save-money-app/dashboard.html
     echo.
     echo รอ 2-5 นาที เพื่อให้ GitHub Pages deploy เสร็จ
+    echo.
+    echo หากยังมีปัญหา กรุณาตรวจสอบ:
+    echo 1. Firebase configuration ใน js/firebase-config.js
+    echo 2. การตั้งค่า GitHub Pages ใน repository settings
+    echo 3. Console ในเบราว์เซอร์สำหรับข้อผิดพลาดเพิ่มเติม
     echo.
 ) else (
     echo.
@@ -70,6 +97,7 @@ if %errorlevel% equ 0 (
     echo 1. Git remote ถูกต้อง
     echo 2. GitHub repository มีอยู่
     echo 3. มีสิทธิ์ push ไปยัง repository
+    echo 4. การเชื่อมต่ออินเทอร์เน็ต
     echo.
 )
 
