@@ -1,0 +1,41 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ฟังก์ชันสำหรับตรวจสอบว่าผู้ใช้เข้าสู่ระบบแล้ว
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // ฟังก์ชันสำหรับตรวจสอบว่าผู้ใช้เป็นเจ้าของไฟล์
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ฟังก์ชันสำหรับตรวจสอบประเภทไฟล์ที่อนุญาต
+    function isAllowedFileType() {
+      return request.resource.contentType.matches('image/.*') ||
+             request.resource.contentType.matches('application/pdf') ||
+             request.resource.contentType.matches('text/.*');
+    }
+    
+    // ฟังก์ชันสำหรับตรวจสอบขนาดไฟล์ (ไม่เกิน 10MB)
+    function isUnderSizeLimit() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // กฎสำหรับไฟล์ของผู้ใช้
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId) && 
+        isAllowedFileType() && 
+        isUnderSizeLimit();
+    }
+    
+    // กฎสำหรับไฟล์ทั่วไป
+    match /{allPaths=**} {
+      allow read, write: if isAuthenticated() && 
+        isAllowedFileType() && 
+        isUnderSizeLimit();
+    }
+  }
+}
