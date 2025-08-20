@@ -317,8 +317,6 @@ function setupEnterKeyNavigation() {
 
 // ฟังก์ชันสำหรับการเริ่มต้นแอปพลิเคชัน
 function initApp() {
-    console.log('เริ่มต้นแอปพลิเคชัน...');
-    
     // ตั้งค่าฟังก์ชันเฉพาะที่ไม่มีใน auth.js
     setupFormToggle();
     setupPasswordStrength();
@@ -333,8 +331,6 @@ function initApp() {
         setupPasswordToggle();
         setupForgotPassword();
     }
-    
-    console.log('เริ่มต้นแอปพลิเคชันสำเร็จ');
 }
 
 // เริ่มต้นแอปพลิเคชันเมื่อโหลดเสร็จ

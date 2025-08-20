@@ -39,7 +39,6 @@ function checkAuthState() {
         } else {
             // ผู้ใช้ไม่ได้เข้าสู่ระบบ
             currentUser = null;
-            console.log('ผู้ใช้ไม่ได้เข้าสู่ระบบ');
             
             // ตรวจสอบว่าอยู่ในหน้าไหน
             const currentPage = window.location.pathname;
@@ -271,8 +270,6 @@ async function saveUserData(user) {
             
             // สร้างหมวดหมู่เริ่มต้น
             await createDefaultCategories(user.uid);
-            
-            console.log('สร้างข้อมูลผู้ใช้ใหม่สำเร็จ');
         } else {
             // อัปเดตเวลาล็อกอินล่าสุด
             await userRef.update({
@@ -317,7 +314,6 @@ async function createDefaultCategories(userId) {
         });
         
         await batch.commit();
-        console.log('สร้างหมวดหมู่เริ่มต้นสำเร็จ');
     } catch (error) {
         console.error('ข้อผิดพลาดในการสร้างหมวดหมู่เริ่มต้น:', error);
     }

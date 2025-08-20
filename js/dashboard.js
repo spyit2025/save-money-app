@@ -217,7 +217,6 @@ async function createDefaultCategories(userId) {
         });
         
         await batch.commit();
-        console.log('สร้างหมวดหมู่เริ่มต้นสำเร็จ');
         showNotification('สร้างหมวดหมู่เริ่มต้นสำเร็จ', 'success');
     } catch (error) {
         console.error('ข้อผิดพลาดในการสร้างหมวดหมู่เริ่มต้น:', error);
@@ -408,7 +407,6 @@ async function navigateToPage(page) {
                 break;
         }
     } else {
-        console.log('ไม่พบหน้า:', page);
         // ถ้าไม่มีหน้าให้กลับไปหน้า Dashboard
         navigateToPage('dashboard');
     }
@@ -440,7 +438,6 @@ let editingTransactionId = null;
 // ฟังก์ชันสำหรับการโหลดหน้าต่างๆ
 function loadTransactionsPage() {
     // หน้าตารางรายการ (ใช้ข้อมูลที่มีอยู่แล้ว)
-    console.log('โหลดหน้ารายการ');
     
     // สร้าง mobile cards สำหรับมือถือ (เรียกใช้ทันที)
     setTimeout(() => {
@@ -490,7 +487,6 @@ function loadTransactionsPage() {
 
 function loadReportsPage() {
     // หน้ารายงาน
-    console.log('โหลดหน้ารายงาน');
     
     // ตั้งค่า Event Listeners สำหรับหน้ารายงาน (เฉพาะครั้งแรก)
     if (!eventListenersAdded.reports) {
@@ -504,7 +500,6 @@ function loadReportsPage() {
 
 async function loadGoalsPage() {
     // หน้าเป้าหมาย
-    console.log('โหลดหน้าเป้าหมาย');
     
     // ตั้งค่า Event Listeners สำหรับหน้าเป้าหมาย (เฉพาะครั้งแรก)
     if (!eventListenersAdded.goals) {
@@ -518,8 +513,6 @@ async function loadGoalsPage() {
 }
 
 function loadProfilePage() {
-    console.log('โหลดหน้าโปรไฟล์');
-    
     // อัปเดต HTML ในหน้าโปรไฟล์
     const profilePage = document.getElementById('profilePage');
     if (profilePage) {
@@ -731,8 +724,6 @@ function loadProfilePage() {
 }
 
 function loadSettingsPage() {
-    console.log('โหลดหน้าตั้งค่า');
-    
     // อัปเดต HTML ในหน้าตั้งค่า
     const settingsPage = document.getElementById('settingsPage');
     if (settingsPage) {
@@ -1065,8 +1056,6 @@ function initializeDataTable() {
                     createMobileTableCards();
                 }
             });
-            
-            console.log('DataTable เริ่มต้นสำเร็จ');
         }
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการเริ่มต้น DataTable:', error);
@@ -1131,8 +1120,6 @@ function createMobileTableCards() {
         
         // เพิ่ม mobile cards ลงใน container
         tableContainer.appendChild(mobileCardsContainer);
-        
-        console.log('สร้าง Mobile Cards สำเร็จ:', transactions.length, 'รายการ');
         
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการสร้าง Mobile Cards:', error);
@@ -1362,8 +1349,6 @@ function initializeTransactionsPageDataTable() {
                     }, 50);
                 }
             });
-            
-            console.log('DataTable หน้า Transactions เริ่มต้นสำเร็จ');
         }
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการเริ่มต้น DataTable หน้า Transactions:', error);
@@ -1372,14 +1357,10 @@ function initializeTransactionsPageDataTable() {
 
 // ฟังก์ชันสำหรับการเริ่มต้นกราฟ
 function initializeChart() {
-    console.log('initializeChart called');
     const ctx = document.getElementById('monthlyChart');
-    console.log('Chart canvas element:', ctx);
     
     if (ctx) {
-        console.log('Chart canvas found, getting chart data...');
         const chartData = getMonthlyChartData();
-        console.log('Chart data received:', chartData);
         
         try {
             monthlyChart = new Chart(ctx, {
@@ -1459,8 +1440,6 @@ function initializeChart() {
                 }
             });
             
-            console.log('Chart created successfully:', monthlyChart);
-            
             // แสดงการแจ้งเตือนถ้าไม่มีข้อมูล
             if (transactions.length === 0) {
                 showNotification('ไม่พบข้อมูลรายการ กราฟแสดงข้อมูลตัวอย่าง', 'info');
@@ -1486,17 +1465,12 @@ function initializeChart() {
 
 // ฟังก์ชันสำหรับการคำนวณข้อมูลกราฟรายเดือน
 function getMonthlyChartData(selectedMonth = null) {
-    console.log('getMonthlyChartData called with selectedMonth:', selectedMonth);
-    console.log('Current transactions array length:', transactions.length);
-    console.log('Sample transactions:', transactions.slice(0, 3));
-    
     const months = [];
     const incomeData = [];
     const expenseData = [];
     
     // ถ้าไม่มีข้อมูล ให้แสดงข้อมูลตัวอย่าง
     if (transactions.length === 0) {
-        console.log('No transactions found, showing sample data');
         if (!selectedMonth) {
             // แสดง 6 เดือนย้อนหลัง
             for (let i = 5; i >= 0; i--) {
@@ -1544,8 +1518,6 @@ function getMonthlyChartData(selectedMonth = null) {
                     return transactionDate >= monthStart && transactionDate <= monthEnd;
                 });
                 
-                console.log(`Month ${monthName}: Found ${monthTransactions.length} transactions`);
-                
                 const income = monthTransactions
                     .filter(t => t.type === 'income')
                     .reduce((sum, t) => sum + t.amount, 0);
@@ -1556,8 +1528,6 @@ function getMonthlyChartData(selectedMonth = null) {
                 
                 incomeData.push(income);
                 expenseData.push(expense);
-                
-                console.log(`Month ${monthName}: Income=${income}, Expense=${expense}`);
             }
         } else {
             // แสดงข้อมูลของเดือนที่เลือก
@@ -1580,8 +1550,6 @@ function getMonthlyChartData(selectedMonth = null) {
                 return transactionDate >= monthStart && transactionDate <= monthEnd;
             });
             
-            console.log(`Selected month ${monthName}: Found ${monthTransactions.length} transactions`);
-            
             const income = monthTransactions
                 .filter(t => t.type === 'income')
                 .reduce((sum, t) => sum + t.amount, 0);
@@ -1592,8 +1560,6 @@ function getMonthlyChartData(selectedMonth = null) {
             
             incomeData.push(income);
             expenseData.push(expense);
-            
-            console.log(`Selected month ${monthName}: Income=${income}, Expense=${expense}`);
         }
     }
     
@@ -1603,7 +1569,6 @@ function getMonthlyChartData(selectedMonth = null) {
         expense: expenseData
     };
     
-    console.log('getMonthlyChartData result:', result);
     return result;
 }
 
@@ -2100,7 +2065,6 @@ function removeDuplicateGoals() {
     });
     
     if (uniqueGoals.length !== goals.length) {
-        console.log(`ลบเป้าหมายที่ซ้ำ: ${goals.length - uniqueGoals.length} รายการ`);
         goals = uniqueGoals;
     }
 }
@@ -2143,8 +2107,6 @@ window.removeDuplicateGoalsFromFirestore = async function removeDuplicateGoalsFr
         
         // ลบข้อมูลซ้ำ
         if (duplicatesToDelete.length > 0) {
-            console.log(`กำลังลบเป้าหมายที่ซ้ำจาก Firestore: ${duplicatesToDelete.length} รายการ`);
-            
             const batch = db.batch();
             duplicatesToDelete.forEach(docId => {
                 const docRef = db
@@ -2156,7 +2118,6 @@ window.removeDuplicateGoalsFromFirestore = async function removeDuplicateGoalsFr
             });
             
             await batch.commit();
-            console.log('ลบข้อมูลเป้าหมายที่ซ้ำสำเร็จ');
             showNotification(`ลบข้อมูลเป้าหมายที่ซ้ำสำเร็จ: ${duplicatesToDelete.length} รายการ`, 'success');
             
             // โหลดข้อมูลใหม่
@@ -2164,7 +2125,6 @@ window.removeDuplicateGoalsFromFirestore = async function removeDuplicateGoalsFr
             updateDashboardStats(); // อัปเดตสถิติ Dashboard
             return true;
         } else {
-            console.log('ไม่พบข้อมูลเป้าหมายที่ซ้ำ');
             showNotification('ไม่พบข้อมูลเป้าหมายที่ซ้ำ', 'info');
         }
         
@@ -3354,21 +3314,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // ฟังก์ชันสำหรับสร้าง Mobile Card Layout สำหรับหน้า Transactions
 function createMobileTableCardsPage() {
     try {
-        console.log('createMobileTableCardsPage called, window width:', window.innerWidth);
-        console.log('Current transactions data:', transactions);
-        console.log('Transactions length:', transactions ? transactions.length : 'undefined');
         // หาตาราง transactionsTablePage และ container ของมัน
         const transactionsTable = document.getElementById('transactionsTablePage');
-        console.log('transactionsTablePage element:', transactionsTable);
         if (!transactionsTable) {
-            console.log('transactionsTablePage not found, exiting...');
             return;
         }
         
         const tableContainer = transactionsTable.closest('.table-responsive');
-        console.log('table container found:', tableContainer);
         if (!tableContainer) {
-            console.log('table-responsive container not found, exiting...');
             return;
         }
         
@@ -3420,10 +3373,6 @@ function createMobileTableCardsPage() {
         // เพิ่ม mobile cards ลงใน container
         tableContainer.appendChild(mobileCardsContainer);
         
-        console.log('สร้าง Mobile Cards หน้า Transactions สำเร็จ:', transactions.length, 'รายการ');
-        console.log('Table container found:', tableContainer);
-        console.log('Mobile cards container:', mobileCardsContainer);
-        
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการสร้าง Mobile Cards หน้า Transactions:', error);
     }
@@ -3432,8 +3381,6 @@ function createMobileTableCardsPage() {
 // ฟังก์ชันสำหรับสร้างข้อมูลตัวอย่าง
 async function createSampleData(userId) {
     try {
-        console.log('กำลังสร้างข้อมูลตัวอย่าง...');
-        
         // ข้อมูลตัวอย่างสำหรับรายการ
         const sampleTransactions = [
             {
@@ -3486,7 +3433,6 @@ async function createSampleData(userId) {
         }
         
         await batch.commit();
-        console.log('สร้างข้อมูลตัวอย่างสำเร็จ:', sampleTransactions.length, 'รายการ');
         
         showNotification('สร้างข้อมูลตัวอย่างสำเร็จ!', 'success');
         
