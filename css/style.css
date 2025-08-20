@@ -805,10 +805,59 @@ body {
     
     /* ซ่อน DataTable controls ที่ไม่จำเป็นบนมือถือ */
     .table-responsive .dataTables_length,
-    .table-responsive .dataTables_filter,
     .table-responsive .dataTables_info,
     .table-responsive .dataTables_paginate {
         display: none !important;
+    }
+    
+    /* Mobile Search Container */
+    .mobile-search-container {
+        background: var(--bg-white);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #dee2e6;
+    }
+    
+    .mobile-search-container .input-group {
+        position: relative;
+    }
+    
+    .mobile-search-container .input-group-text {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border: none;
+        color: white;
+        border-radius: 0.5rem 0 0 0.5rem;
+    }
+    
+    .mobile-search-container .form-control {
+        border: 1px solid #dee2e6;
+        border-left: none;
+        border-radius: 0 0.5rem 0.5rem 0;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-search-container .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        border-color: var(--primary);
+    }
+    
+    .mobile-search-container .btn-outline-secondary {
+        border: 1px solid #dee2e6;
+        border-left: none;
+        border-radius: 0 0.5rem 0.5rem 0;
+        background: white;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-search-container .btn-outline-secondary:hover {
+        background: #f8f9fa;
+        color: #495057;
+        border-color: #adb5bd;
     }
     
     /* Card สำหรับแต่ละแถว */

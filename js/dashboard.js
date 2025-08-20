@@ -1177,6 +1177,41 @@ function createMobileTableCards() {
         const mobileCardsContainer = document.createElement('div');
         mobileCardsContainer.className = 'mobile-table-cards';
         
+        // เพิ่ม Search Box สำหรับ Mobile
+        const searchContainer = document.createElement('div');
+        searchContainer.className = 'mobile-search-container mb-3';
+        searchContainer.innerHTML = `
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" id="mobileSearchInput" placeholder="ค้นหารายการ..." aria-label="ค้นหารายการ">
+                <button class="btn btn-outline-secondary" type="button" id="mobileSearchClear" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        mobileCardsContainer.appendChild(searchContainer);
+        
+        // เพิ่ม Event Listeners สำหรับ Search
+        const searchInput = searchContainer.querySelector('#mobileSearchInput');
+        const clearButton = searchContainer.querySelector('#mobileSearchClear');
+        
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            filterMobileTransactions(searchTerm, mobileCardsContainer, transactions);
+            
+            // แสดง/ซ่อนปุ่มล้าง
+            clearButton.style.display = searchTerm ? 'block' : 'none';
+        });
+        
+        clearButton.addEventListener('click', () => {
+            searchInput.value = '';
+            filterMobileTransactions('', mobileCardsContainer, transactions);
+            clearButton.style.display = 'none';
+            searchInput.focus();
+        });
+        
         // ตรวจสอบว่ามีข้อมูลหรือไม่
         if (transactions.length === 0) {
             // แสดงข้อความเมื่อไม่มีข้อมูล
@@ -3491,6 +3526,41 @@ function createMobileTableCardsPage() {
         const mobileCardsContainer = document.createElement('div');
         mobileCardsContainer.className = 'mobile-table-cards';
         
+        // เพิ่ม Search Box สำหรับ Mobile (หน้า Transactions)
+        const searchContainer = document.createElement('div');
+        searchContainer.className = 'mobile-search-container mb-3';
+        searchContainer.innerHTML = `
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" id="mobileSearchInputPage" placeholder="ค้นหารายการ..." aria-label="ค้นหารายการ">
+                <button class="btn btn-outline-secondary" type="button" id="mobileSearchClearPage" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        mobileCardsContainer.appendChild(searchContainer);
+        
+        // เพิ่ม Event Listeners สำหรับ Search
+        const searchInput = searchContainer.querySelector('#mobileSearchInputPage');
+        const clearButton = searchContainer.querySelector('#mobileSearchClearPage');
+        
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            filterMobileTransactions(searchTerm, mobileCardsContainer, transactions);
+            
+            // แสดง/ซ่อนปุ่มล้าง
+            clearButton.style.display = searchTerm ? 'block' : 'none';
+        });
+        
+        clearButton.addEventListener('click', () => {
+            searchInput.value = '';
+            filterMobileTransactions('', mobileCardsContainer, transactions);
+            clearButton.style.display = 'none';
+            searchInput.focus();
+        });
+        
         if (transactions.length === 0) {
             // แสดงข้อความเมื่อไม่มีข้อมูล
             const noDataCard = document.createElement('div');
@@ -3691,5 +3761,128 @@ async function createSampleData(userId) {
     } catch (error) {
         console.error('ข้อผิดพลาดในการสร้างข้อมูลตัวอย่าง:', error);
         showNotification('เกิดข้อผิดพลาดในการสร้างข้อมูลตัวอย่าง', 'danger');
+    }
+}
+
+// ฟังก์ชันสำหรับกรองข้อมูลใน Mobile Cards
+function filterMobileTransactions(searchTerm, mobileCardsContainer, allTransactions) {
+    try {
+        // กรองข้อมูลตามคำค้นหา
+        const filteredTransactions = allTransactions.filter(transaction => {
+            if (!searchTerm) return true;
+            
+            const searchLower = searchTerm.toLowerCase();
+            
+            // ค้นหาจากรายละเอียด
+            if (transaction.description && transaction.description.toLowerCase().includes(searchLower)) {
+                return true;
+            }
+            
+            // ค้นหาจากหมวดหมู่
+            if (transaction.category && transaction.category.toLowerCase().includes(searchLower)) {
+                return true;
+            }
+            
+            // ค้นหาจากจำนวนเงิน
+            if (transaction.amount && transaction.amount.toString().includes(searchTerm)) {
+                return true;
+            }
+            
+            // ค้นหาจากประเภท (รายรับ/รายจ่าย)
+            if (transaction.type) {
+                const typeText = transaction.type === 'income' ? 'รายรับ' : 'รายจ่าย';
+                if (typeText.includes(searchLower)) {
+                    return true;
+                }
+            }
+            
+            // ค้นหาจากวันที่
+            if (transaction.date) {
+                const dateStr = new Date(transaction.date).toLocaleDateString('th-TH');
+                if (dateStr.includes(searchTerm)) {
+                    return true;
+                }
+            }
+            
+            return false;
+        });
+        
+        // หา cards container และ pagination container
+        const cardsPageContainer = mobileCardsContainer.querySelector('.mobile-cards-page');
+        const paginationContainer = mobileCardsContainer.querySelector('.mobile-pagination');
+        
+        if (!cardsPageContainer) return;
+        
+        // ลบ cards เดิม
+        cardsPageContainer.innerHTML = '';
+        
+        if (filteredTransactions.length === 0) {
+            // แสดงข้อความเมื่อไม่พบข้อมูล
+            const noDataCard = document.createElement('div');
+            noDataCard.className = 'table-card';
+            noDataCard.innerHTML = `
+                <div class="table-card-header">
+                    <span>ไม่พบข้อมูล</span>
+                </div>
+                <div class="table-card-body text-center">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">ไม่พบรายการที่ตรงกับคำค้นหา</h6>
+                    <p class="text-muted mb-3">ลองค้นหาด้วยคำอื่น</p>
+                </div>
+            `;
+            cardsPageContainer.appendChild(noDataCard);
+            
+            // ซ่อน pagination
+            if (paginationContainer) {
+                paginationContainer.style.display = 'none';
+            }
+        } else {
+            // แสดงข้อมูลที่กรองแล้ว
+            const itemsPerPage = 5;
+            const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+            
+            // แสดง cards เฉพาะหน้าปัจจุบัน
+            const startIndex = 0;
+            const endIndex = Math.min(itemsPerPage, filteredTransactions.length);
+            const currentPageTransactions = filteredTransactions.slice(startIndex, endIndex);
+            
+            currentPageTransactions.forEach(transaction => {
+                const card = createTransactionCard(transaction);
+                cardsPageContainer.appendChild(card);
+            });
+            
+            // อัปเดต Pagination Controls
+            if (paginationContainer) {
+                if (totalPages > 1) {
+                    paginationContainer.style.display = 'flex';
+                    
+                    // อัปเดตข้อความหน้า
+                    const pageInfo = paginationContainer.querySelector('span');
+                    if (pageInfo) {
+                        pageInfo.textContent = `หน้า 1 จาก ${totalPages}`;
+                    }
+                    
+                    // รีเซ็ตสถานะปุ่ม
+                    const prevButton = paginationContainer.querySelector('button:first-child');
+                    const nextButton = paginationContainer.querySelector('button:last-child');
+                    
+                    if (prevButton) prevButton.disabled = true;
+                    if (nextButton) nextButton.disabled = totalPages <= 1;
+                    
+                    // อัปเดต onclick handlers สำหรับข้อมูลที่กรองแล้ว
+                    if (prevButton) {
+                        prevButton.onclick = () => changeMobilePage(-1, totalPages, filteredTransactions, mobileCardsContainer, paginationContainer);
+                    }
+                    if (nextButton) {
+                        nextButton.onclick = () => changeMobilePage(1, totalPages, filteredTransactions, mobileCardsContainer, paginationContainer);
+                    }
+                } else {
+                    paginationContainer.style.display = 'none';
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการกรองข้อมูล Mobile Cards:', error);
     }
 }
