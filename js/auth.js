@@ -21,7 +21,7 @@ function checkAuthState() {
         if (user) {
             // ผู้ใช้เข้าสู่ระบบแล้ว
             currentUser = user;
-            console.log('ผู้ใช้เข้าสู่ระบบ:', user.email);
+            // ผู้ใช้เข้าสู่ระบบสำเร็จ
             
             // ตรวจสอบว่าอยู่ในหน้าไหน
             const currentPage = window.location.pathname;

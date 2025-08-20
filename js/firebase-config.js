@@ -59,9 +59,8 @@ if (!window.firestoreConfigured) {
         // ตั้งค่า global Firestore settings
         firebase.firestore.setLogLevel('error'); // ลด log level
         window.firestoreConfigured = true;
-        console.log('ตั้งค่า Firestore สำเร็จ');
     } catch (e) {
-        console.log('ไม่สามารถตั้งค่า Firestore ได้:', e.message);
+        // Silent error handling
     }
 }
 
@@ -70,9 +69,8 @@ if (!window.firestoreConfigured) {
     try {
         firebase.firestore.setLogLevel('error');
         window.firestoreConfigured = true;
-        console.log('ตั้งค่า Firestore สำเร็จ');
     } catch (e) {
-        console.log('ไม่สามารถตั้งค่า Firestore ได้:', e.message);
+        // Silent error handling
     }
 }
 
@@ -87,9 +85,8 @@ if (!window.firestoreCacheConfigured) {
             cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
         });
         window.firestoreCacheConfigured = true;
-        console.log('ตั้งค่า Firestore cache สำเร็จ');
     } catch (e) {
-        console.log('ไม่สามารถตั้งค่า Firestore cache ได้:', e.message);
+        // Silent error handling
     }
 }
 
@@ -100,7 +97,7 @@ try {
         analytics = firebase.analytics();
     }
 } catch (e) {
-    console.log('Analytics ไม่พร้อมใช้งาน');
+    // Analytics not available
 }
 
 // ฟังก์ชันสำหรับการจัดการข้อผิดพลาด
@@ -165,7 +162,7 @@ function showNotification(message, type = 'info') {
 }
 
 // Firebase พร้อมใช้งาน
-console.log('Firebase config โหลดเรียบร้อยแล้ว');
+// Firebase config loaded successfully
 
 // ส่งออกตัวแปรสำหรับใช้ในไฟล์อื่น
 window.firebaseConfig = {

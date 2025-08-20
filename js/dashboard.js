@@ -21,13 +21,12 @@ async function initDashboard() {
         
         // ตรวจสอบว่าผู้ใช้เข้าสู่ระบบแล้ว
         const user = auth.currentUser;
-        if (!user) {
-            console.log('ผู้ใช้ไม่ได้เข้าสู่ระบบ ไปหน้า login');
-            window.location.href = 'index.html';
-            return;
-        }
+            if (!user) {
+        window.location.href = 'index.html';
+        return;
+    }
         
-        console.log('เริ่มต้นโหลดข้อมูล Dashboard...');
+        // เริ่มต้นโหลดข้อมูล Dashboard
         
         // โหลดข้อมูลทั้งหมด
         await Promise.all([
@@ -39,7 +38,7 @@ async function initDashboard() {
         
         // ตรวจสอบและสร้างข้อมูลตัวอย่างถ้าไม่มีข้อมูล
         if (transactions.length === 0) {
-            console.log('ไม่พบข้อมูลรายการ กำลังสร้างข้อมูลตัวอย่าง...');
+            // ไม่พบข้อมูลรายการ กำลังสร้างข้อมูลตัวอย่าง
             await createSampleData(user.uid);
             await loadTransactions(); // โหลดข้อมูลใหม่
         }
@@ -51,7 +50,7 @@ async function initDashboard() {
         updateDashboardStats();
         loadRecentTransactions();
         
-        console.log('เริ่มต้นหน้า Dashboard สำเร็จ');
+        // เริ่มต้นหน้า Dashboard สำเร็จ
         
     } catch (error) {
         console.error('ข้อผิดพลาดในการเริ่มต้นหน้า Dashboard:', error);
@@ -75,7 +74,7 @@ async function loadCategories() {
             ...doc.data()
         }));
         
-        console.log('โหลดหมวดหมู่สำเร็จ:', categories.length, 'รายการ');
+        // โหลดหมวดหมู่สำเร็จ
         
         // แสดง/ซ่อนปุ่มสร้างหมวดหมู่
         const createCategoriesBtn = document.getElementById('createCategoriesBtn');
@@ -99,7 +98,7 @@ async function loadCategories() {
         
         // ถ้าไม่มีหมวดหมู่ ให้สร้างหมวดหมู่เริ่มต้น
         if (categories.length === 0) {
-            console.log('ไม่พบหมวดหมู่ กำลังสร้างหมวดหมู่เริ่มต้น...');
+            // ไม่พบหมวดหมู่ กำลังสร้างหมวดหมู่เริ่มต้น
             await createDefaultCategories(user.uid);
             // โหลดหมวดหมู่ใหม่
             await loadCategories();
@@ -115,7 +114,7 @@ async function loadCategories() {
 async function loadTransactions() {
     try {
         const user = auth.currentUser;
-        console.log('Loading transactions for user:', user.uid);
+        // Loading transactions for user
         
         const transactionsSnapshot = await db
             .collection('users')
@@ -124,7 +123,7 @@ async function loadTransactions() {
             .orderBy('date', 'desc')
             .get();
         
-        console.log('Raw transactions snapshot:', transactionsSnapshot.docs.length, 'documents');
+        // Raw transactions snapshot
         
         transactions = transactionsSnapshot.docs.map(doc => {
             const data = doc.data();
@@ -137,14 +136,7 @@ async function loadTransactions() {
             };
         });
         
-        console.log('โหลดรายการสำเร็จ:', transactions.length, 'รายการ');
-        console.log('Sample transactions:', transactions.slice(0, 3).map(t => ({
-            id: t.id,
-            type: t.type,
-            amount: t.amount,
-            date: t.date,
-            category: t.category
-        })));
+        // โหลดรายการสำเร็จ
         
         // อัปเดต mobile cards หลังจากโหลดข้อมูล
         createMobileTableCards();
@@ -178,8 +170,7 @@ async function loadGoals() {
             };
         });
         
-        console.log('โหลดเป้าหมายสำเร็จ:', goals.length, 'เป้าหมาย');
-        console.log('รายการเป้าหมายทั้งหมด:', goals.map(g => ({ id: g.id, title: g.title })));
+        // โหลดเป้าหมายสำเร็จ
         
         // อัปเดตสถิติ Dashboard หลังจากโหลดเป้าหมาย
         updateDashboardStats();
@@ -246,7 +237,7 @@ async function loadUserSettings() {
         if (userDoc.exists) {
             const userData = userDoc.data();
             // สามารถใช้ข้อมูลการตั้งค่าได้ที่นี่
-            console.log('โหลดการตั้งค่าผู้ใช้สำเร็จ');
+            // โหลดการตั้งค่าผู้ใช้สำเร็จ
         }
         
     } catch (error) {
