@@ -1,9 +1,5 @@
 /* ===== Performance Optimizations ===== */
-/* Optimize font loading */
-@font-face {
-    font-family: 'Noto Sans Thai';
-    font-display: swap;
-}
+/* Optimize font loading - Using Google Fonts link instead of @font-face */
 
 /* Reduce layout shift */
 * {
@@ -1360,5 +1356,189 @@ body {
     .card {
         box-shadow: none !important;
         border: 1px solid #ddd !important;
+    }
+}
+
+/* ซ่อนช่องค้นหาเดิมของ DataTables */
+.dataTables_filter {
+    display: none !important;
+}
+
+/* สไตล์สำหรับช่องค้นหาแบบรวม */
+.unified-search-container {
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 0;
+}
+
+.unified-search-container .input-group {
+    max-width: 400px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.unified-search-container .form-control {
+    border: none;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    background-color: #fff;
+}
+
+.unified-search-container .form-control:focus {
+    box-shadow: none;
+    background-color: #fff;
+}
+
+.unified-search-container .input-group-text {
+    background-color: #f8f9fa;
+    border: none;
+    color: #6c757d;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+.unified-search-container .btn-outline-secondary {
+    border: none;
+    padding: 0.75rem 1rem;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    transition: all 0.2s ease-in-out;
+}
+
+.unified-search-container .btn-outline-secondary:hover {
+    background-color: #e9ecef;
+    color: #495057;
+    transform: scale(1.05);
+}
+
+.unified-search-container .btn-outline-secondary:active {
+    transform: scale(0.95);
+}
+
+/* Responsive สำหรับช่องค้นหา */
+@media (max-width: 768px) {
+    .unified-search-container .input-group {
+        max-width: 100%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .unified-search-container {
+        margin-bottom: 1rem;
+    }
+    
+    .unified-search-container .form-control,
+    .unified-search-container .input-group-text,
+    .unified-search-container .btn-outline-secondary {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Focus states */
+.unified-search-container .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.unified-search-container .input-group:focus-within {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation สำหรับปุ่มล้าง */
+.unified-search-container .btn-outline-secondary {
+    transition: all 0.2s ease-in-out;
+}
+
+.unified-search-container .btn-outline-secondary:not([style*="display: none"]) {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Placeholder styling */
+.unified-search-container .form-control::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+/* Icon styling */
+.unified-search-container .input-group-text i {
+    font-size: 0.875rem;
+}
+
+/* สไตล์สำหรับการแสดงผลเมื่อไม่มีผลลัพธ์ */
+.no-search-results {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #6c757d;
+}
+
+.no-search-results i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.no-search-results h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.no-search-results p {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+}
+
+/* Animation สำหรับการแสดงผลการค้นหา */
+.search-results-animation {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* สไตล์สำหรับการแสดงจำนวนผลลัพธ์ */
+.search-results-count {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.search-results-count strong {
+    color: #495057;
+}
+
+/* สไตล์สำหรับการแสดงผลในโหมด mobile */
+@media (max-width: 768px) {
+    .no-search-results {
+        padding: 1.5rem 1rem;
+    }
+    
+    .no-search-results i {
+        font-size: 2.5rem;
+    }
+    
+    .search-results-count {
+        font-size: 0.8rem;
+        margin-bottom: 0.75rem;
     }
 }

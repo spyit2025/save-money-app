@@ -7,6 +7,7 @@ let categories = [];
 let goals = [];
 let monthlyChart = null;
 let transactionsTable = null;
+let transactionsPageTable = null;
 
 // ฟังก์ชันสำหรับการเริ่มต้นหน้า Dashboard
 async function initDashboard() {
@@ -1137,11 +1138,20 @@ function initializeDataTable() {
                 autoWidth: false,
                 scrollX: true,
                 scrollCollapse: true,
+                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                     '<"row"<"col-sm-12"tr>>' +
+                     '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 drawCallback: function() {
                     // อัปเดต mobile cards หลังจาก DataTable วาดใหม่
                     createMobileTableCards();
                 }
             });
+
+            // ซ่อนช่องค้นหาเดิมของ DataTables
+            $('.dataTables_filter').hide();
+            
+            // เชื่อมต่อช่องค้นหาแบบรวมกับ DataTables
+            setupUnifiedSearch('unifiedSearchInput', 'unifiedSearchClear', transactionsTable);
         }
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการเริ่มต้น DataTable:', error);
@@ -1177,40 +1187,13 @@ function createMobileTableCards() {
         const mobileCardsContainer = document.createElement('div');
         mobileCardsContainer.className = 'mobile-table-cards';
         
-        // เพิ่ม Search Box สำหรับ Mobile
-        const searchContainer = document.createElement('div');
-        searchContainer.className = 'mobile-search-container mb-3';
-        searchContainer.innerHTML = `
-            <div class="input-group">
-                <span class="input-group-text">
-                    <i class="fas fa-search"></i>
-                </span>
-                <input type="text" class="form-control" id="mobileSearchInput" placeholder="ค้นหารายการ..." aria-label="ค้นหารายการ">
-                <button class="btn btn-outline-secondary" type="button" id="mobileSearchClear" style="display: none;">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-        mobileCardsContainer.appendChild(searchContainer);
-        
-        // เพิ่ม Event Listeners สำหรับ Search
-        const searchInput = searchContainer.querySelector('#mobileSearchInput');
-        const clearButton = searchContainer.querySelector('#mobileSearchClear');
-        
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase().trim();
+        // ใช้ช่องค้นหาแบบรวมที่มีอยู่แล้ว
+        const unifiedSearchInput = document.getElementById('unifiedSearchInput');
+        if (unifiedSearchInput) {
+            // ซิงค์ค่าจากช่องค้นหาแบบรวม
+            const searchTerm = unifiedSearchInput.value.toLowerCase().trim();
             filterMobileTransactions(searchTerm, mobileCardsContainer, transactions);
-            
-            // แสดง/ซ่อนปุ่มล้าง
-            clearButton.style.display = searchTerm ? 'block' : 'none';
-        });
-        
-        clearButton.addEventListener('click', () => {
-            searchInput.value = '';
-            filterMobileTransactions('', mobileCardsContainer, transactions);
-            clearButton.style.display = 'none';
-            searchInput.focus();
-        });
+        }
         
         // ตรวจสอบว่ามีข้อมูลหรือไม่
         if (transactions.length === 0) {
@@ -1398,7 +1381,7 @@ function initializeTransactionsPageDataTable() {
             }
             
             // เริ่มต้น DataTable ใหม่
-            $('#transactionsTablePage').DataTable({
+            transactionsPageTable = $('#transactionsTablePage').DataTable({
                 data: transactions,
                 columns: [
                     { 
@@ -1508,6 +1491,9 @@ function initializeTransactionsPageDataTable() {
                 autoWidth: false,
                 scrollX: true,
                 scrollCollapse: true,
+                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                     '<"row"<"col-sm-12"tr>>' +
+                     '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 drawCallback: function() {
                     // อัปเดต mobile cards หลังจาก DataTable วาดใหม่
                     setTimeout(() => {
@@ -1515,6 +1501,12 @@ function initializeTransactionsPageDataTable() {
                     }, 50);
                 }
             });
+
+            // ซ่อนช่องค้นหาเดิมของ DataTables
+            $('.dataTables_filter').hide();
+            
+            // เชื่อมต่อช่องค้นหาแบบรวมกับ DataTables
+            setupUnifiedSearch('unifiedSearchInputPage', 'unifiedSearchClearPage', transactionsPageTable);
         }
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการเริ่มต้น DataTable หน้า Transactions:', error);
@@ -2063,8 +2055,7 @@ function refreshDashboard() {
     }
     
     // อัปเดต DataTable ในหน้า Transactions
-    if ($.fn.DataTable.isDataTable('#transactionsTablePage')) {
-        const transactionsPageTable = $('#transactionsTablePage').DataTable();
+    if (transactionsPageTable && $.fn.DataTable.isDataTable('#transactionsTablePage')) {
         transactionsPageTable.clear();
         transactionsPageTable.rows.add(transactions);
         transactionsPageTable.draw();
@@ -3543,40 +3534,13 @@ function createMobileTableCardsPage() {
         const mobileCardsContainer = document.createElement('div');
         mobileCardsContainer.className = 'mobile-table-cards';
         
-        // เพิ่ม Search Box สำหรับ Mobile (หน้า Transactions)
-        const searchContainer = document.createElement('div');
-        searchContainer.className = 'mobile-search-container mb-3';
-        searchContainer.innerHTML = `
-            <div class="input-group">
-                <span class="input-group-text">
-                    <i class="fas fa-search"></i>
-                </span>
-                <input type="text" class="form-control" id="mobileSearchInputPage" placeholder="ค้นหารายการ..." aria-label="ค้นหารายการ">
-                <button class="btn btn-outline-secondary" type="button" id="mobileSearchClearPage" style="display: none;">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-        mobileCardsContainer.appendChild(searchContainer);
-        
-        // เพิ่ม Event Listeners สำหรับ Search
-        const searchInput = searchContainer.querySelector('#mobileSearchInputPage');
-        const clearButton = searchContainer.querySelector('#mobileSearchClearPage');
-        
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase().trim();
+        // ใช้ช่องค้นหาแบบรวมที่มีอยู่แล้ว
+        const unifiedSearchInput = document.getElementById('unifiedSearchInputPage');
+        if (unifiedSearchInput) {
+            // ซิงค์ค่าจากช่องค้นหาแบบรวม
+            const searchTerm = unifiedSearchInput.value.toLowerCase().trim();
             filterMobileTransactions(searchTerm, mobileCardsContainer, transactions);
-            
-            // แสดง/ซ่อนปุ่มล้าง
-            clearButton.style.display = searchTerm ? 'block' : 'none';
-        });
-        
-        clearButton.addEventListener('click', () => {
-            searchInput.value = '';
-            filterMobileTransactions('', mobileCardsContainer, transactions);
-            clearButton.style.display = 'none';
-            searchInput.focus();
-        });
+        }
         
         if (transactions.length === 0) {
             // แสดงข้อความเมื่อไม่มีข้อมูล
@@ -3836,16 +3800,11 @@ function filterMobileTransactions(searchTerm, mobileCardsContainer, allTransacti
         if (filteredTransactions.length === 0) {
             // แสดงข้อความเมื่อไม่พบข้อมูล
             const noDataCard = document.createElement('div');
-            noDataCard.className = 'table-card';
+            noDataCard.className = 'no-search-results search-results-animation';
             noDataCard.innerHTML = `
-                <div class="table-card-header">
-                    <span>ไม่พบข้อมูล</span>
-                </div>
-                <div class="table-card-body text-center">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h6 class="text-muted">ไม่พบรายการที่ตรงกับคำค้นหา</h6>
-                    <p class="text-muted mb-3">ลองค้นหาด้วยคำอื่น</p>
-                </div>
+                <i class="fas fa-search"></i>
+                <h6>ไม่พบรายการที่ตรงกับคำค้นหา</h6>
+                <p>ลองค้นหาด้วยคำอื่น หรือล้างการค้นหาเพื่อดูรายการทั้งหมด</p>
             `;
             cardsPageContainer.appendChild(noDataCard);
             
@@ -3854,6 +3813,14 @@ function filterMobileTransactions(searchTerm, mobileCardsContainer, allTransacti
                 paginationContainer.style.display = 'none';
             }
         } else {
+            // แสดงจำนวนผลลัพธ์
+            const resultsCount = document.createElement('div');
+            resultsCount.className = 'search-results-count';
+            resultsCount.innerHTML = `
+                พบ <strong>${filteredTransactions.length}</strong> รายการที่ตรงกับคำค้นหา
+            `;
+            cardsPageContainer.appendChild(resultsCount);
+            
             // แสดงข้อมูลที่กรองแล้ว
             const itemsPerPage = 5;
             const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
@@ -4015,3 +3982,123 @@ function filterMobileGoals(searchTerm) {
         console.error('เกิดข้อผิดพลาดในการกรองข้อมูลเป้าหมาย:', error);
     }
 }
+
+// ฟังก์ชันสำหรับตั้งค่าช่องค้นหาแบบรวม
+function setupUnifiedSearch(inputId, clearId, dataTable) {
+    const searchInput = document.getElementById(inputId);
+    const clearButton = document.getElementById(clearId);
+    
+    if (!searchInput || !clearButton) return;
+    
+    // Event listener สำหรับการพิมพ์ค้นหา
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value;
+        
+        // ค้นหาใน DataTable
+        if (dataTable) {
+            dataTable.search(searchTerm).draw();
+        }
+        
+        // แสดง/ซ่อนปุ่มล้าง
+        clearButton.style.display = searchTerm ? 'block' : 'none';
+        
+        // อัปเดต mobile cards ถ้าจำเป็น
+        if (window.innerWidth <= 768) {
+            // หา mobile cards container และอัปเดต
+            const tableContainer = dataTable.table().container().closest('.table-responsive');
+            if (tableContainer) {
+                const mobileCardsContainer = tableContainer.querySelector('.mobile-table-cards');
+                if (mobileCardsContainer) {
+                    filterMobileTransactions(searchTerm.toLowerCase().trim(), mobileCardsContainer, transactions);
+                }
+            }
+        }
+    });
+    
+    // Event listener สำหรับปุ่มล้าง
+    clearButton.addEventListener('click', () => {
+        searchInput.value = '';
+        
+        // ล้างการค้นหาใน DataTable
+        if (dataTable) {
+            dataTable.search('').draw();
+        }
+        
+        // ซ่อนปุ่มล้าง
+        clearButton.style.display = 'none';
+        
+        // โฟกัสกลับไปที่ช่องค้นหา
+        searchInput.focus();
+        
+        // อัปเดต mobile cards ถ้าจำเป็น
+        if (window.innerWidth <= 768) {
+            // หา mobile cards container และอัปเดต
+            const tableContainer = dataTable.table().container().closest('.table-responsive');
+            if (tableContainer) {
+                const mobileCardsContainer = tableContainer.querySelector('.mobile-table-cards');
+                if (mobileCardsContainer) {
+                    filterMobileTransactions('', mobileCardsContainer, transactions);
+                }
+            }
+        }
+    });
+    
+    // Keyboard shortcuts
+    searchInput.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + K เพื่อโฟกัสที่ช่องค้นหา
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        }
+        
+        // Escape เพื่อล้างการค้นหา
+        if (e.key === 'Escape') {
+            searchInput.value = '';
+            if (dataTable) {
+                dataTable.search('').draw();
+            }
+            clearButton.style.display = 'none';
+            searchInput.blur();
+        }
+        
+        // Enter เพื่อยืนยันการค้นหา (ไม่ต้องทำอะไรเพิ่ม เพราะ DataTable จะจัดการเอง)
+    });
+    
+    // ซิงค์ช่องค้นหาเมื่อเปลี่ยนหน้าจอ
+    window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) {
+            // ในโหมด mobile ให้ใช้ช่องค้นหาแบบรวม
+            const mobileSearchInput = document.getElementById('mobileSearchInput');
+            if (mobileSearchInput) {
+                mobileSearchInput.value = searchInput.value;
+            }
+        }
+    });
+    
+    // เพิ่ม tooltip สำหรับ keyboard shortcuts
+    searchInput.setAttribute('title', 'ใช้ Ctrl+K เพื่อโฟกัส, Escape เพื่อล้าง');
+    clearButton.setAttribute('title', 'ล้างการค้นหา (Escape)');
+}
+
+// ฟังก์ชันสำหรับจัดการ global keyboard shortcuts
+function setupGlobalSearchShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + K เพื่อโฟกัสที่ช่องค้นหาที่กำลังแสดงอยู่
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            
+            // หาช่องค้นหาที่กำลังแสดงอยู่
+            const activeSearchInput = document.querySelector('.unified-search-container:not([style*="display: none"]) input');
+            if (activeSearchInput) {
+                activeSearchInput.focus();
+                activeSearchInput.select();
+            }
+        }
+    });
+}
+
+// เรียกใช้ฟังก์ชันเมื่อโหลดหน้า
+document.addEventListener('DOMContentLoaded', () => {
+    setupGlobalSearchShortcuts();
+});
