@@ -127,15 +127,23 @@ async function loadTransactions() {
         
         transactions = transactionsSnapshot.docs.map(doc => {
             const data = doc.data();
+            
+            // ใช้ DateHelper สำหรับการแปลงวันที่
+            const convertedData = window.DateHelper ? 
+                window.DateHelper.convertMultipleDates(data, ['date', 'createdAt', 'updatedAt']) :
+                {
+                    ...data,
+                    date: data.date && typeof data.date.toDate === 'function' ? data.date.toDate() : 
+                          data.date ? new Date(data.date) : new Date(),
+                    createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : 
+                              data.createdAt ? new Date(data.createdAt) : null,
+                    updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function' ? data.updatedAt.toDate() : 
+                              data.updatedAt ? new Date(data.updatedAt) : null
+                };
+            
             return {
                 id: doc.id,
-                ...data,
-                date: data.date && typeof data.date.toDate === 'function' ? data.date.toDate() : 
-                      data.date ? new Date(data.date) : new Date(),
-                createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : 
-                          data.createdAt ? new Date(data.createdAt) : null,
-                updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function' ? data.updatedAt.toDate() : 
-                          data.updatedAt ? new Date(data.updatedAt) : null
+                ...convertedData
             };
         });
         
@@ -164,15 +172,23 @@ async function loadGoals() {
         
         goals = goalsSnapshot.docs.map(doc => {
             const data = doc.data();
+            
+            // ใช้ DateHelper สำหรับการแปลงวันที่
+            const convertedData = window.DateHelper ? 
+                window.DateHelper.convertMultipleDates(data, ['targetDate', 'createdAt', 'updatedAt']) :
+                {
+                    ...data,
+                    targetDate: data.targetDate && typeof data.targetDate.toDate === 'function' ? data.targetDate.toDate() : 
+                               data.targetDate ? new Date(data.targetDate) : new Date(),
+                    createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : 
+                              data.createdAt ? new Date(data.createdAt) : null,
+                    updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function' ? data.updatedAt.toDate() : 
+                              data.updatedAt ? new Date(data.updatedAt) : null
+                };
+            
             return {
                 id: doc.id,
-                ...data,
-                targetDate: data.targetDate && typeof data.targetDate.toDate === 'function' ? data.targetDate.toDate() : 
-                           data.targetDate ? new Date(data.targetDate) : new Date(),
-                createdAt: data.createdAt && typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : 
-                          data.createdAt ? new Date(data.createdAt) : null,
-                updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function' ? data.updatedAt.toDate() : 
-                          data.updatedAt ? new Date(data.updatedAt) : null
+                ...convertedData
             };
         });
         
