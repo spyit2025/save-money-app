@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>แอพออมเงิน - เข้าสู่ระบบ</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" as="style">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts - Noto Sans Thai -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <!-- ด้านซ้าย - รูปภาพ/ข้อความ -->
+            <div class="col-lg-6 d-none d-lg-flex login-bg">
+                <div class="login-content">
+                    <h1 class="text-white mb-4">
+                        <i class="fas fa-piggy-bank me-3"></i>
+                        แอพออมเงิน
+                    </h1>
+                    <p class="text-white-50 fs-5">
+                        จัดการการเงินของคุณอย่างชาญฉลาด<br>
+                        เริ่มต้นการออมเงินตั้งแต่วันนี้
+                    </p>
+                </div>
+            </div>
+            
+            <!-- ด้านขวา - ฟอร์มล็อกอิน -->
+            <div class="col-lg-6 d-flex align-items-center justify-content-center">
+                <div class="login-form-container">
+                    <div class="text-center mb-4">
+                        <h2 class="text-primary fw-bold">เข้าสู่ระบบ</h2>
+                        <p class="text-muted">ยินดีต้อนรับกลับมา</p>
+                    </div>
+                    
+                    <!-- ฟอร์มล็อกอิน -->
+                    <form id="loginForm" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">อีเมล</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope text-muted"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" required>
+                                <div class="invalid-feedback">
+                                    กรุณากรอกอีเมลที่ถูกต้อง
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">รหัสผ่าน</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <div class="invalid-feedback">
+                                    กรุณากรอกรหัสผ่าน
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">
+                                จดจำฉัน
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            เข้าสู่ระบบ
+                        </button>
+                        
+                        <div class="text-center">
+                            <a href="#" class="text-decoration-none" id="forgotPassword">
+                                ลืมรหัสผ่าน?
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- ปุ่มสมัครสมาชิก -->
+                    <div class="text-center">
+                        <p class="text-muted mb-0">ยังไม่มีบัญชี?</p>
+                        <button class="btn btn-outline-primary mt-2" id="showRegisterForm">
+                            <i class="fas fa-user-plus me-2"></i>
+                            สมัครสมาชิก
+                        </button>
+                    </div>
+                    
+                    <!-- ฟอร์มสมัครสมาชิก (ซ่อนไว้) -->
+                    <form id="registerForm" class="needs-validation" novalidate style="display: none;">
+                        <div class="mb-3">
+                            <label for="displayName" class="form-label">ชื่อ</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control" id="displayName" required>
+                                <div class="invalid-feedback">
+                                    กรุณากรอกชื่อ
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerEmail" class="form-label">อีเมล</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope text-muted"></i>
+                                </span>
+                                <input type="email" class="form-control" id="registerEmail" required>
+                                <div class="invalid-feedback">
+                                    กรุณากรอกอีเมลที่ถูกต้อง
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">รหัสผ่าน</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control" id="registerPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleRegisterPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <div class="invalid-feedback">
+                                    กรุณากรอกรหัสผ่าน
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">ยืนยันรหัสผ่าน</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                                <div class="invalid-feedback">
+                                    กรุณายืนยันรหัสผ่าน
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-user-plus me-2"></i>
+                            สมัครสมาชิก
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

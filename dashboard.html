@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>แอพออมเงิน - แดชบอร์ด</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/chart.js" as="script">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts - Noto Sans Thai -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- DataTables Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-piggy-bank me-2"></i>
+                แอพออมเงิน
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-page="dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>
+                            แดชบอร์ด
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="transactions">
+                            <i class="fas fa-list me-1"></i>
+                            รายการ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="reports">
+                            <i class="fas fa-chart-bar me-1"></i>
+                            รายงาน
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-page="goals">
+                            <i class="fas fa-bullseye me-1"></i>
+                            เป้าหมาย
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span id="userDisplayName">ผู้ใช้</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-page="profile">
+                                <i class="fas fa-user me-2"></i>โปรไฟล์
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" data-page="settings">
+                                <i class="fas fa-cog me-2"></i>ตั้งค่า
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt me-2"></i>ออกจากระบบ
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page-content">
+            <!-- สรุปข้อมูล -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-wallet text-success fs-4"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="card-title text-muted mb-1">ยอดรวมการออม</h6>
+                                    <h4 class="mb-0 text-success" id="totalSavings">฿0</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-arrow-up text-primary fs-4"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="card-title text-muted mb-1">รายรับเดือนนี้</h6>
+                                    <h4 class="mb-0 text-primary" id="monthlyIncome">฿0</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-danger bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-arrow-down text-danger fs-4"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="card-title text-muted mb-1">รายจ่ายเดือนนี้</h6>
+                                    <h4 class="mb-0 text-danger" id="monthlyExpense">฿0</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="fas fa-bullseye text-warning fs-4"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="card-title text-muted mb-1">เป้าหมาย</h6>
+                                    <h4 class="mb-0 text-warning" id="activeGoals">0</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- กราฟและตาราง -->
+            <div class="row">
+                <!-- กราฟรายเดือน -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2 text-primary"></i>
+                                สถิติรายเดือน
+                            </h5>
+                            <div class="chart-controls">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </span>
+                                    <input type="month" class="form-control form-control-sm" id="chartMonthSelector" 
+                                           value="" placeholder="เลือกเดือน">
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary" id="updateChartBtn">
+                                    <i class="fas fa-sync-alt me-1"></i>อัพเดท
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="monthlyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- รายการล่าสุด -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-clock me-2 text-primary"></i>
+                                รายการล่าสุด
+                            </h5>
+                            <button class="btn btn-sm btn-outline-primary" id="addTransactionBtn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="recentTransactions" class="list-group list-group-flush">
+                                <!-- รายการจะถูกเพิ่มด้วย JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ตารางรายการทั้งหมด -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-table me-2 text-primary"></i>
+                                รายการทั้งหมด
+                            </h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-warning me-2" id="createCategoriesBtn" style="display: none;">
+                                    <i class="fas fa-tags me-1"></i>สร้างหมวดหมู่
+                                </button>
+                                <button class="btn btn-sm btn-outline-success me-2" id="exportBtn">
+                                    <i class="fas fa-download me-1"></i>ส่งออก
+                                </button>
+                                <button class="btn btn-sm btn-primary" id="addNewTransactionBtn">
+                                    <i class="fas fa-plus me-1"></i>เพิ่มรายการ
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="transactionsTable" class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>วันที่สร้าง</th>
+                                            <th>วันที่แก้ไข</th>
+                                            <th>หมวดหมู่</th>
+                                            <th>รายละเอียด</th>
+                                            <th>จำนวนเงิน</th>
+                                            <th>ประเภท</th>
+                                            <th>การจัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- ข้อมูลจะถูกเพิ่มด้วย DataTables -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Transactions Page -->
+        <div id="transactionsPage" class="page-content" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-list me-2 text-primary"></i>
+                                รายการทั้งหมด
+                            </h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-warning me-2" id="createCategoriesTransactionsBtn" style="display: none;">
+                                    <i class="fas fa-tags me-1"></i>สร้างหมวดหมู่
+                                </button>
+                                <div class="btn-group me-2" role="group">
+                                    <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-download me-1"></i>ส่งออก
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" id="exportCSVBtn">
+                                            <i class="fas fa-file-csv me-2"></i>ส่งออกเป็น CSV
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" id="exportExcelBtn">
+                                            <i class="fas fa-file-excel me-2"></i>ส่งออกเป็น Excel
+                                        </a></li>
+                                    </ul>
+                                </div>
+                                <button class="btn btn-sm btn-primary" id="addTransactionFromPageBtn">
+                                    <i class="fas fa-plus me-1"></i>เพิ่มรายการ
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="transactionsTablePage" class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>วันที่สร้าง</th>
+                                            <th>วันที่แก้ไข</th>
+                                            <th>หมวดหมู่</th>
+                                            <th>รายละเอียด</th>
+                                            <th>จำนวนเงิน</th>
+                                            <th>ประเภท</th>
+                                            <th>การจัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- ข้อมูลจะถูกเพิ่มด้วย DataTables -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Page -->
+        <div id="reportsPage" class="page-content" style="display: none;">
+            <!-- เนื้อหาจะถูกสร้างด้วย JavaScript -->
+        </div>
+        
+        <!-- Goals Page -->
+        <div id="goalsPage" class="page-content" style="display: none;">
+            <!-- เนื้อหาจะถูกสร้างด้วย JavaScript -->
+        </div>
+        
+        <!-- Profile Page -->
+        <div id="profilePage" class="page-content" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user me-2 text-primary"></i>
+                                โปรไฟล์
+                            </h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">กำลังพัฒนา</h5>
+                            <p class="text-muted">หน้าโปรไฟล์กำลังอยู่ในระหว่างการพัฒนา</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page-content" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-cog me-2 text-primary"></i>
+                                ตั้งค่า
+                            </h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">กำลังพัฒนา</h5>
+                            <p class="text-muted">หน้าตั้งค่ากำลังอยู่ในระหว่างการพัฒนา</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal เพิ่มรายการ -->
+    <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transactionModalTitle">
+                        <i class="fas fa-plus me-2"></i>
+                        เพิ่มรายการใหม่
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="transactionForm">
+                        <div class="mb-3">
+                            <label for="transactionType" class="form-label">ประเภท</label>
+                            <select class="form-select" id="transactionType" required>
+                                <option value="income">รายรับ</option>
+                                <option value="expense">รายจ่าย</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="transactionAmount" class="form-label">จำนวนเงิน</label>
+                            <div class="input-group">
+                                <span class="input-group-text">฿</span>
+                                <input type="number" class="form-control" id="transactionAmount" required min="0" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="transactionCategory" class="form-label">หมวดหมู่</label>
+                            <select class="form-select" id="transactionCategory" required>
+                                <!-- หมวดหมู่จะถูกเพิ่มด้วย JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="transactionDescription" class="form-label">รายละเอียด</label>
+                            <textarea class="form-control" id="transactionDescription" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="transactionDate" class="form-label">วันที่</label>
+                            <input type="date" class="form-control" id="transactionDate" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" id="saveTransactionBtn">
+                        <i class="fas fa-save me-1"></i>บันทึก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal เพิ่มเป้าหมาย -->
+    <div class="modal fade" id="goalModal" tabindex="-1" aria-labelledby="goalModalTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="goalModalTitle">
+                        <i class="fas fa-bullseye me-2"></i>
+                        เพิ่มเป้าหมายใหม่
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="goalForm">
+                        <div class="mb-3">
+                            <label for="goalTitle" class="form-label">ชื่อเป้าหมาย</label>
+                            <input type="text" class="form-control" id="goalTitle" required placeholder="เช่น ซื้อรถยนต์, ท่องเที่ยว, ฉุกเฉิน">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="goalTargetAmount" class="form-label">จำนวนเงินเป้าหมาย</label>
+                            <div class="input-group">
+                                <span class="input-group-text">฿</span>
+                                <input type="number" class="form-control" id="goalTargetAmount" required min="1" step="0.01" placeholder="100000">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="goalCurrentAmount" class="form-label">จำนวนเงินปัจจุบัน</label>
+                            <div class="input-group">
+                                <span class="input-group-text">฿</span>
+                                <input type="number" class="form-control" id="goalCurrentAmount" min="0" step="0.01" value="0" placeholder="0">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="goalTargetDate" class="form-label">วันที่เป้าหมาย</label>
+                            <input type="date" class="form-control" id="goalTargetDate" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="goalDescription" class="form-label">รายละเอียด</label>
+                            <textarea class="form-control" id="goalDescription" rows="3" placeholder="อธิบายเป้าหมายของคุณ..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="goalCategory" class="form-label">หมวดหมู่เป้าหมาย</label>
+                            <select class="form-select" id="goalCategory" required>
+                                <option value="">เลือกหมวดหมู่</option>
+                                <option value="travel">ท่องเที่ยว</option>
+                                <option value="vehicle">ยานพาหนะ</option>
+                                <option value="house">ที่อยู่อาศัย</option>
+                                <option value="education">การศึกษา</option>
+                                <option value="emergency">เงินฉุกเฉิน</option>
+                                <option value="investment">การลงทุน</option>
+                                <option value="gadget">เครื่องใช้/อุปกรณ์</option>
+                                <option value="other">อื่นๆ</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" id="saveGoalBtn">
+                        <i class="fas fa-save me-1"></i>บันทึก
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
