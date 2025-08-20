@@ -37,6 +37,13 @@ async function initDashboard() {
             loadUserSettings()
         ]);
         
+        // ตรวจสอบและสร้างข้อมูลตัวอย่างถ้าไม่มีข้อมูล
+        if (transactions.length === 0) {
+            console.log('ไม่พบข้อมูลรายการ กำลังสร้างข้อมูลตัวอย่าง...');
+            await createSampleData(user.uid);
+            await loadTransactions(); // โหลดข้อมูลใหม่
+        }
+        
         // เริ่มต้น UI
         setupEventListeners();
         initializeDataTable();
@@ -443,6 +450,11 @@ let editingTransactionId = null;
 function loadTransactionsPage() {
     // หน้าตารางรายการ (ใช้ข้อมูลที่มีอยู่แล้ว)
     console.log('โหลดหน้ารายการ');
+    
+    // สร้าง mobile cards สำหรับมือถือ (เรียกใช้ทันที)
+    setTimeout(() => {
+        createMobileTableCardsPage();
+    }, 100);
     
     // เริ่มต้น DataTable สำหรับหน้า Transactions
     initializeTransactionsPageDataTable();
@@ -1038,7 +1050,7 @@ function initializeDataTable() {
                 pageLength: 10,
                 language: {
                     "lengthMenu": "แสดง _MENU_ รายการต่อหน้า",
-                    "zeroRecords": "ไม่พบข้อมูล",
+                    "zeroRecords": "<div class='text-center py-4'><i class='fas fa-inbox fa-3x text-muted mb-3'></i><h6 class='text-muted'>ยังไม่มีรายการใดๆ</h6><p class='text-muted mb-3'>เริ่มต้นด้วยการเพิ่มรายการแรกของคุณ</p><button class='btn btn-primary' onclick='showTransactionModal()'><i class='fas fa-plus me-1'></i>เพิ่มรายการแรก</button></div>",
                     "info": "แสดงหน้า _PAGE_ จาก _PAGES_",
                     "infoEmpty": "ไม่มีข้อมูล",
                     "infoFiltered": "(กรองจาก _MAX_ รายการทั้งหมด)",
@@ -1051,7 +1063,7 @@ function initializeDataTable() {
                     },
                     "processing": "กำลังประมวลผล...",
                     "loadingRecords": "กำลังโหลด...",
-                    "emptyTable": "ไม่มีข้อมูลในตาราง"
+                    "emptyTable": "<div class='text-center py-4'><i class='fas fa-inbox fa-3x text-muted mb-3'></i><h6 class='text-muted'>ยังไม่มีรายการใดๆ</h6><p class='text-muted mb-3'>เริ่มต้นด้วยการเพิ่มรายการแรกของคุณ</p><button class='btn btn-primary' onclick='showTransactionModal()'><i class='fas fa-plus me-1'></i>เพิ่มรายการแรก</button></div>"
                 },
                 responsive: true,
                 autoWidth: false,
@@ -1073,8 +1085,21 @@ function initializeDataTable() {
 // ฟังก์ชันสำหรับสร้าง Mobile Card Layout
 function createMobileTableCards() {
     try {
-        const tableContainer = document.querySelector('.table-responsive');
+        // หาตาราง transactionsTable (ของ Dashboard) และ container ของมัน
+        const transactionsTable = document.getElementById('transactionsTable');
+        if (!transactionsTable) return;
+        
+        const tableContainer = transactionsTable.closest('.table-responsive');
         if (!tableContainer) return;
+        
+        // ตรวจสอบขนาดหน้าจอ - ถ้าเป็นเดสก์ท็อปไม่ต้องสร้าง mobile cards
+        if (window.innerWidth > 768) {
+            const existingCards = tableContainer.querySelector('.mobile-table-cards');
+            if (existingCards) {
+                existingCards.remove();
+            }
+            return;
+        }
         
         // ลบ mobile cards เดิม (ถ้ามี)
         const existingCards = tableContainer.querySelector('.mobile-table-cards');
@@ -1086,11 +1111,32 @@ function createMobileTableCards() {
         const mobileCardsContainer = document.createElement('div');
         mobileCardsContainer.className = 'mobile-table-cards';
         
-        // สร้าง cards สำหรับแต่ละ transaction
-        transactions.forEach(transaction => {
-            const card = createTransactionCard(transaction);
-            mobileCardsContainer.appendChild(card);
-        });
+        // ตรวจสอบว่ามีข้อมูลหรือไม่
+        if (transactions.length === 0) {
+            // แสดงข้อความเมื่อไม่มีข้อมูล
+            const noDataCard = document.createElement('div');
+            noDataCard.className = 'table-card';
+            noDataCard.innerHTML = `
+                <div class="table-card-header">
+                    <span>ไม่มีข้อมูล</span>
+                </div>
+                <div class="table-card-body text-center">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">ยังไม่มีรายการใดๆ</h6>
+                    <p class="text-muted mb-3">เริ่มต้นด้วยการเพิ่มรายการแรกของคุณ</p>
+                    <button class="btn btn-primary" onclick="showTransactionModal()">
+                        <i class="fas fa-plus me-1"></i>เพิ่มรายการแรก
+                    </button>
+                </div>
+            `;
+            mobileCardsContainer.appendChild(noDataCard);
+        } else {
+            // สร้าง cards สำหรับแต่ละ transaction
+            transactions.forEach(transaction => {
+                const card = createTransactionCard(transaction);
+                mobileCardsContainer.appendChild(card);
+            });
+        }
         
         // เพิ่ม mobile cards ลงใน container
         tableContainer.appendChild(mobileCardsContainer);
@@ -1299,7 +1345,7 @@ function initializeTransactionsPageDataTable() {
                 pageLength: 10,
                 language: {
                     "lengthMenu": "แสดง _MENU_ รายการต่อหน้า",
-                    "zeroRecords": "ไม่พบข้อมูล",
+                    "zeroRecords": "<div class='text-center py-4'><i class='fas fa-inbox fa-3x text-muted mb-3'></i><h6 class='text-muted'>ยังไม่มีรายการใดๆ</h6><p class='text-muted mb-3'>เริ่มต้นด้วยการเพิ่มรายการแรกของคุณ</p><button class='btn btn-primary' onclick='showTransactionModal()'><i class='fas fa-plus me-1'></i>เพิ่มรายการแรก</button></div>",
                     "info": "แสดงหน้า _PAGE_ จาก _PAGES_",
                     "infoEmpty": "ไม่มีข้อมูล",
                     "infoFiltered": "(กรองจาก _MAX_ รายการทั้งหมด)",
@@ -1312,7 +1358,7 @@ function initializeTransactionsPageDataTable() {
                     },
                     "processing": "กำลังประมวลผล...",
                     "loadingRecords": "กำลังโหลด...",
-                    "emptyTable": "ไม่มีข้อมูลในตาราง"
+                    "emptyTable": "<div class='text-center py-4'><i class='fas fa-inbox fa-3x text-muted mb-3'></i><h6 class='text-muted'>ยังไม่มีรายการใดๆ</h6><p class='text-muted mb-3'>เริ่มต้นด้วยการเพิ่มรายการแรกของคุณ</p><button class='btn btn-primary' onclick='showTransactionModal()'><i class='fas fa-plus me-1'></i>เพิ่มรายการแรก</button></div>"
                 },
                 responsive: true,
                 autoWidth: false,
@@ -1320,7 +1366,9 @@ function initializeTransactionsPageDataTable() {
                 scrollCollapse: true,
                 drawCallback: function() {
                     // อัปเดต mobile cards หลังจาก DataTable วาดใหม่
-                    createMobileTableCardsPage();
+                    setTimeout(() => {
+                        createMobileTableCardsPage();
+                    }, 50);
                 }
             });
             
@@ -3295,13 +3343,52 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         initDashboard();
     }, 200);
+    
+    // จัดการ window resize สำหรับ responsive design
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            // อัปเดต mobile cards เมื่อขนาดหน้าจอเปลี่ยน
+            if (window.location.hash === '#transactions' || document.getElementById('transactionsTablePage')) {
+                createMobileTableCardsPage();
+            }
+            if (window.location.hash === '#dashboard' || document.getElementById('transactionsTable')) {
+                createMobileTableCards();
+            }
+        }, 250);
+    });
 });
 
 // ฟังก์ชันสำหรับสร้าง Mobile Card Layout สำหรับหน้า Transactions
 function createMobileTableCardsPage() {
     try {
-        const tableContainer = document.querySelector('.table-responsive');
-        if (!tableContainer) return;
+        console.log('createMobileTableCardsPage called, window width:', window.innerWidth);
+        console.log('Current transactions data:', transactions);
+        console.log('Transactions length:', transactions ? transactions.length : 'undefined');
+        // หาตาราง transactionsTablePage และ container ของมัน
+        const transactionsTable = document.getElementById('transactionsTablePage');
+        console.log('transactionsTablePage element:', transactionsTable);
+        if (!transactionsTable) {
+            console.log('transactionsTablePage not found, exiting...');
+            return;
+        }
+        
+        const tableContainer = transactionsTable.closest('.table-responsive');
+        console.log('table container found:', tableContainer);
+        if (!tableContainer) {
+            console.log('table-responsive container not found, exiting...');
+            return;
+        }
+        
+        // ตรวจสอบขนาดหน้าจอ - ถ้าเป็นเดสก์ท็อปไม่ต้องสร้าง mobile cards
+        if (window.innerWidth > 768) {
+            const existingCards = tableContainer.querySelector('.mobile-table-cards');
+            if (existingCards) {
+                existingCards.remove();
+            }
+            return;
+        }
         
         // ลบ mobile cards เดิม (ถ้ามี)
         const existingCards = tableContainer.querySelector('.mobile-table-cards');
@@ -3313,18 +3400,107 @@ function createMobileTableCardsPage() {
         const mobileCardsContainer = document.createElement('div');
         mobileCardsContainer.className = 'mobile-table-cards';
         
-        // สร้าง cards สำหรับแต่ละ transaction
-        transactions.forEach(transaction => {
-            const card = createTransactionCard(transaction);
-            mobileCardsContainer.appendChild(card);
-        });
+        if (transactions.length === 0) {
+            // แสดงข้อความเมื่อไม่มีข้อมูล
+            const noDataCard = document.createElement('div');
+            noDataCard.className = 'table-card';
+            noDataCard.innerHTML = `
+                <div class="table-card-header">
+                    <span>ไม่มีข้อมูล</span>
+                </div>
+                <div class="table-card-body text-center">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">ยังไม่มีรายการใดๆ</h6>
+                    <p class="text-muted mb-3">เริ่มต้นด้วยการเพิ่มรายการแรกของคุณ</p>
+                    <button class="btn btn-primary" onclick="showTransactionModal()">
+                        <i class="fas fa-plus me-1"></i>เพิ่มรายการแรก
+                    </button>
+                </div>
+            `;
+            mobileCardsContainer.appendChild(noDataCard);
+        } else {
+            // สร้าง cards สำหรับแต่ละ transaction
+            transactions.forEach(transaction => {
+                const card = createTransactionCard(transaction);
+                mobileCardsContainer.appendChild(card);
+            });
+        }
         
         // เพิ่ม mobile cards ลงใน container
         tableContainer.appendChild(mobileCardsContainer);
         
         console.log('สร้าง Mobile Cards หน้า Transactions สำเร็จ:', transactions.length, 'รายการ');
+        console.log('Table container found:', tableContainer);
+        console.log('Mobile cards container:', mobileCardsContainer);
         
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการสร้าง Mobile Cards หน้า Transactions:', error);
+    }
+}
+
+// ฟังก์ชันสำหรับสร้างข้อมูลตัวอย่าง
+async function createSampleData(userId) {
+    try {
+        console.log('กำลังสร้างข้อมูลตัวอย่าง...');
+        
+        // ข้อมูลตัวอย่างสำหรับรายการ
+        const sampleTransactions = [
+            {
+                amount: 25000,
+                category: 'salary',
+                description: 'เงินเดือนประจำเดือน',
+                type: 'income',
+                date: new Date().toISOString().split('T')[0]
+            },
+            {
+                amount: 5000,
+                category: 'food',
+                description: 'ค่าอาหารประจำเดือน',
+                type: 'expense',
+                date: new Date().toISOString().split('T')[0]
+            },
+            {
+                amount: 3000,
+                category: 'transport',
+                description: 'ค่าเดินทางประจำเดือน',
+                type: 'expense',
+                date: new Date().toISOString().split('T')[0]
+            },
+            {
+                amount: 8000,
+                category: 'shopping',
+                description: 'ซื้อเสื้อผ้าใหม่',
+                type: 'expense',
+                date: new Date().toISOString().split('T')[0]
+            },
+            {
+                amount: 15000,
+                category: 'investment',
+                description: 'ลงทุนในหุ้น',
+                type: 'income',
+                date: new Date().toISOString().split('T')[0]
+            }
+        ];
+        
+        // เพิ่มข้อมูลตัวอย่างลงใน Firestore
+        const batch = db.batch();
+        
+        for (const transaction of sampleTransactions) {
+            const docRef = db.collection('users').doc(userId).collection('transactions').doc();
+            batch.set(docRef, {
+                ...transaction,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+        }
+        
+        await batch.commit();
+        console.log('สร้างข้อมูลตัวอย่างสำเร็จ:', sampleTransactions.length, 'รายการ');
+        
+        showNotification('สร้างข้อมูลตัวอย่างสำเร็จ!', 'success');
+        
+    } catch (error) {
+        console.error('ข้อผิดพลาดในการสร้างข้อมูลตัวอย่าง:', error);
+        showNotification('เกิดข้อผิดพลาดในการสร้างข้อมูลตัวอย่าง', 'danger');
     }
 }
