@@ -462,6 +462,13 @@ async function navigateToPage(page) {
         dropdown.hide();
     }
     
+    // ยุบ navbar บนหน้าจอเล็ก (มือถือ/tablet) หลังจากคลิกเมนู
+    const navbarCollapse = document.getElementById('navbarNav');
+    if (navbarCollapse && window.innerWidth < 992) { // Bootstrap lg breakpoint
+        const bsCollapse = bootstrap.Collapse.getOrCreateInstance(navbarCollapse);
+        bsCollapse.hide();
+    }
+    
     // ซ่อนทุกหน้า
     document.querySelectorAll('.page-content').forEach(content => {
         content.style.display = 'none';
@@ -2403,7 +2410,7 @@ function updateGoalsData() {
                                                     <small class="text-muted">เป้าหมาย</small>
                                                     <div class="fw-bold text-success">฿${goal.targetAmount.toLocaleString('th-TH')}</div>
                                                     <button class="btn btn-outline-info btn-sm mt-1" onclick="showUpdateProgressModal('${goal.id}')" title="อัปเดตความคืบหน้า">
-                                                        <i class="fas fa-edit"></i> แก้ไข
+                                                        <i class="fas fa-edit"></i> อัพเดท
                                                     </button>
                                                 </div>
                                             </div>
