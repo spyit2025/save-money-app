@@ -113,6 +113,17 @@ img {
     }
 }
 
+@keyframes fadeOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
 /* ===== Security Status Indicators ===== */
 .security-status {
     display: inline-flex;
@@ -140,6 +151,115 @@ img {
     background: rgba(220, 53, 69, 0.1);
     color: #dc3545;
     border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* ===== Compact View Styles ===== */
+.compact-view {
+    /* ลดขนาด spacing ทั่วไป */
+    --bs-spacer: 0.5rem;
+}
+
+.compact-view .card,
+.compact-view .notification-card,
+.compact-view .stats-card {
+    padding: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.compact-view h1,
+.compact-view h2,
+.compact-view h3,
+.compact-view h4,
+.compact-view h5,
+.compact-view h6 {
+    font-size: 0.9em !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.compact-view .btn {
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.875rem !important;
+}
+
+.compact-view .table {
+    font-size: 0.875rem !important;
+}
+
+.compact-view .form-control,
+.compact-view .form-select {
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.875rem !important;
+}
+
+.compact-view .navbar {
+    padding: 0.5rem 1rem !important;
+}
+
+.compact-view .sidebar {
+    padding: 0.5rem !important;
+}
+
+.compact-view .container-fluid {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+.compact-view .row {
+    margin-left: -0.375rem;
+    margin-right: -0.375rem;
+}
+
+.compact-view .col,
+.compact-view .col-1,
+.compact-view .col-2,
+.compact-view .col-3,
+.compact-view .col-4,
+.compact-view .col-5,
+.compact-view .col-6,
+.compact-view .col-7,
+.compact-view .col-8,
+.compact-view .col-9,
+.compact-view .col-10,
+.compact-view .col-11,
+.compact-view .col-12,
+.compact-view .col-lg,
+.compact-view .col-md,
+.compact-view .col-sm,
+.compact-view .col-xl {
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
+}
+
+/* ปรับขนาด icons ใน compact view */
+.compact-view .fas,
+.compact-view .far,
+.compact-view .fab {
+    font-size: 0.9em;
+}
+
+/* ปรับขนาด badges และ labels */
+.compact-view .badge {
+    font-size: 0.75em;
+    padding: 0.25em 0.5em;
+}
+
+/* ปรับขนาด alerts */
+.compact-view .alert {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* ปรับขนาด modals */
+.compact-view .modal-header {
+    padding: 0.75rem 1rem;
+}
+
+.compact-view .modal-body {
+    padding: 0.75rem 1rem;
+}
+
+.compact-view .modal-footer {
+    padding: 0.75rem 1rem;
 }
 
 /* ===== ตัวแปรสีหลัก (โทนสีเขียว-ฟ้า) ===== */

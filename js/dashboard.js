@@ -59,6 +59,9 @@ async function initDashboard() {
         // ตั้งค่า event listeners สำหรับตรวจจับการใช้งาน
         setupDashboardActivityListeners();
         
+        // โหลดการตั้งค่า Compact View
+        loadCompactViewSettings();
+        
         // เริ่มต้นหน้า Dashboard สำเร็จ
         
     } catch (error) {
@@ -3319,6 +3322,9 @@ window.saveSettings = function() {
             });
         }
         
+        // อัปเดตการตั้งค่า Compact View
+        applyCompactView(settings.compactView);
+        
         // อัปเดตสถานะการแจ้งเตือน
         updateNotificationStatus();
         
@@ -3369,6 +3375,11 @@ function applySettings(settings) {
             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : 
             settings.theme
         );
+    }
+    
+    // ใช้ Compact View
+    if (settings.hasOwnProperty('compactView')) {
+        applyCompactView(settings.compactView);
     }
 }
 
@@ -4163,7 +4174,7 @@ function updateAutoLogoutDisplay() {
     }
 }
 
-// ฟังก์ชันสำหรับแสดงเวลาที่เหลือก่อน Auto Logout
+// ฟังก์ชันสำหรับแสดงเวลาที่เหลือก่อน Auto Logout (แสดงชั่วคราว 10 วินาที)
 function updateAutoLogoutTimerDisplay() {
     const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
     const isEnabled = userSettings.autoLogout !== false;
@@ -4194,6 +4205,7 @@ function updateAutoLogoutTimerDisplay() {
         timerElement.className = 'position-fixed bottom-0 end-0 m-3 p-2 bg-warning text-dark rounded shadow';
         timerElement.style.zIndex = '9999';
         timerElement.style.fontSize = '0.8rem';
+        timerElement.style.transition = 'opacity 0.5s ease-in-out';
         document.body.appendChild(timerElement);
     }
     
@@ -4204,6 +4216,27 @@ function updateAutoLogoutTimerDisplay() {
         timerElement.className = 'position-fixed bottom-0 end-0 m-3 p-2 bg-info text-white rounded shadow';
         timerElement.innerHTML = `<i class="fas fa-clock me-1"></i>เซสชันหมดใน ${remainingMinutes} นาที`;
     }
+    
+    // แสดงข้อความเป็นเวลา 10 วินาทีแล้วซ่อน
+    timerElement.style.opacity = '1';
+    
+    // ลบ timer เดิมถ้ามี
+    if (window.autoLogoutHideTimer) {
+        clearTimeout(window.autoLogoutHideTimer);
+    }
+    
+    // ตั้งเวลาให้ซ่อนข้อความหลังจาก 10 วินาที
+    window.autoLogoutHideTimer = setTimeout(() => {
+        if (timerElement) {
+            timerElement.style.animation = 'fadeOut 0.5s ease forwards';
+            // ลบ element หลังจาก fade out เสร็จ
+            setTimeout(() => {
+                if (timerElement && timerElement.parentNode) {
+                    timerElement.remove();
+                }
+            }, 500);
+        }
+    }, 10000); // 10 วินาที
 }
 
 // ฟังก์ชันสำหรับเริ่มต้นการแสดงเวลาที่เหลือ
@@ -4220,6 +4253,12 @@ function stopAutoLogoutTimerDisplay() {
     if (autoLogoutTimerDisplay) {
         clearInterval(autoLogoutTimerDisplay);
         autoLogoutTimerDisplay = null;
+    }
+    
+    // ลบ hide timer ถ้ามี
+    if (window.autoLogoutHideTimer) {
+        clearTimeout(window.autoLogoutHideTimer);
+        window.autoLogoutHideTimer = null;
     }
     
     // ลบ element แสดงเวลา
@@ -4241,4 +4280,120 @@ function setupDashboardActivityListeners() {
     events.forEach(event => {
         document.addEventListener(event, updateLastActivity, true);
     });
+}
+
+// ฟังก์ชันสำหรับใช้ Compact View
+function applyCompactView(isCompact) {
+    const body = document.body;
+    
+    if (isCompact) {
+        // เพิ่ม class compact-view
+        body.classList.add('compact-view');
+        
+        // ปรับขนาด padding และ margin ของ cards
+        const cards = document.querySelectorAll('.card, .notification-card, .stats-card');
+        cards.forEach(card => {
+            card.style.padding = '0.75rem';
+            card.style.marginBottom = '0.75rem';
+        });
+        
+        // ปรับขนาด font ของ headings
+        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(heading => {
+            heading.style.fontSize = '0.9em';
+            heading.style.marginBottom = '0.5rem';
+        });
+        
+        // ปรับขนาด buttons
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.style.padding = '0.375rem 0.75rem';
+            button.style.fontSize = '0.875rem';
+        });
+        
+        // ปรับขนาด table
+        const tables = document.querySelectorAll('.table');
+        tables.forEach(table => {
+            table.style.fontSize = '0.875rem';
+        });
+        
+        // ปรับขนาด form controls
+        const formControls = document.querySelectorAll('.form-control, .form-select');
+        formControls.forEach(control => {
+            control.style.padding = '0.375rem 0.75rem';
+            control.style.fontSize = '0.875rem';
+        });
+        
+        // ปรับขนาด spacing ใน navbar
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.style.padding = '0.5rem 1rem';
+        }
+        
+        // ปรับขนาด sidebar (ถ้ามี)
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.style.padding = '0.5rem';
+        }
+        
+        showNotification('เปิดใช้งาน Compact View', 'success');
+        
+    } else {
+        // ลบ class compact-view
+        body.classList.remove('compact-view');
+        
+        // คืนค่าขนาดเดิม
+        const cards = document.querySelectorAll('.card, .notification-card, .stats-card');
+        cards.forEach(card => {
+            card.style.padding = '';
+            card.style.marginBottom = '';
+        });
+        
+        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(heading => {
+            heading.style.fontSize = '';
+            heading.style.marginBottom = '';
+        });
+        
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.style.padding = '';
+            button.style.fontSize = '';
+        });
+        
+        const tables = document.querySelectorAll('.table');
+        tables.forEach(table => {
+            table.style.fontSize = '';
+        });
+        
+        const formControls = document.querySelectorAll('.form-control, .form-select');
+        formControls.forEach(control => {
+            control.style.padding = '';
+            control.style.fontSize = '';
+        });
+        
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.style.padding = '';
+        }
+        
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.style.padding = '';
+        }
+        
+        showNotification('ปิดใช้งาน Compact View', 'info');
+    }
+}
+
+// ฟังก์ชันสำหรับโหลดการตั้งค่า Compact View เมื่อเริ่มต้นหน้า
+function loadCompactViewSettings() {
+    try {
+        const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+        if (userSettings.hasOwnProperty('compactView')) {
+            applyCompactView(userSettings.compactView);
+        }
+    } catch (error) {
+        console.error('ข้อผิดพลาดในการโหลดการตั้งค่า Compact View:', error);
+    }
 }
