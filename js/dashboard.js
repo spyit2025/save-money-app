@@ -9,6 +9,9 @@ let monthlyChart = null;
 let transactionsTable = null;
 let transactionsPageTable = null;
 
+// ตัวแปรสำหรับแสดงเวลาที่เหลือก่อน Auto Logout
+let autoLogoutTimerDisplay = null;
+
 // ฟังก์ชันสำหรับการเริ่มต้นหน้า Dashboard
 async function initDashboard() {
     try {
@@ -49,6 +52,12 @@ async function initDashboard() {
         initializeChart();
         updateDashboardStats();
         loadRecentTransactions();
+        
+        // เริ่มต้นการแสดงเวลาที่เหลือก่อน Auto Logout
+        startAutoLogoutTimerDisplay();
+        
+        // ตั้งค่า event listeners สำหรับตรวจจับการใช้งาน
+        setupDashboardActivityListeners();
         
         // เริ่มต้นหน้า Dashboard สำเร็จ
         
@@ -1017,6 +1026,7 @@ function loadSettingsPage() {
         // ตั้งค่า Event Listeners สำหรับการแจ้งเตือน
         setTimeout(() => {
             setupNotificationListeners();
+            updateAutoLogoutDisplay(); // อัปเดตการแสดงผล Auto Logout
         }, 100);
     }
 }
@@ -3301,6 +3311,14 @@ window.saveSettings = function() {
         // ใช้การตั้งค่าใหม่
         applySettings(settings);
         
+        // อัปเดตการตั้งค่า Auto Logout
+        if (window.authFunctions && window.authFunctions.updateAutoLogoutSettings) {
+            window.authFunctions.updateAutoLogoutSettings({
+                sessionTimeout: settings.sessionTimeout,
+                autoLogoutEnabled: settings.autoLogout
+            });
+        }
+        
         // อัปเดตสถานะการแจ้งเตือน
         updateNotificationStatus();
         
@@ -4109,3 +4127,118 @@ function setupGlobalSearchShortcuts() {
 document.addEventListener('DOMContentLoaded', () => {
     setupGlobalSearchShortcuts();
 });
+
+// ฟังก์ชันสำหรับแสดงสถานะ Auto Logout ที่ทำงานจริง
+function updateAutoLogoutStatus() {
+    const autoLogoutCheckbox = document.getElementById('autoLogout');
+    const sessionTimeoutSelect = document.getElementById('sessionTimeout');
+    const statusElement = document.querySelector('.notification-status');
+    
+    if (autoLogoutCheckbox && sessionTimeoutSelect && statusElement) {
+        const isEnabled = autoLogoutCheckbox.checked;
+        const timeout = sessionTimeoutSelect.value;
+        
+        if (isEnabled) {
+            statusElement.textContent = `ปลอดภัย (${timeout} นาที)`;
+            statusElement.className = 'notification-status active';
+        } else {
+            statusElement.textContent = 'ปิดใช้งาน';
+            statusElement.className = 'notification-status inactive';
+        }
+    }
+}
+
+// ฟังก์ชันสำหรับอัปเดตการแสดงผล Auto Logout ในหน้า Settings
+function updateAutoLogoutDisplay() {
+    const autoLogoutCheckbox = document.getElementById('autoLogout');
+    const sessionTimeoutSelect = document.getElementById('sessionTimeout');
+    
+    if (autoLogoutCheckbox && sessionTimeoutSelect) {
+        // เพิ่ม event listeners สำหรับอัปเดตสถานะ
+        autoLogoutCheckbox.addEventListener('change', updateAutoLogoutStatus);
+        sessionTimeoutSelect.addEventListener('change', updateAutoLogoutStatus);
+        
+        // อัปเดตสถานะเริ่มต้น
+        updateAutoLogoutStatus();
+    }
+}
+
+// ฟังก์ชันสำหรับแสดงเวลาที่เหลือก่อน Auto Logout
+function updateAutoLogoutTimerDisplay() {
+    const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+    const isEnabled = userSettings.autoLogout !== false;
+    const timeout = parseInt(userSettings.sessionTimeout) || 30;
+    
+    if (!isEnabled || !auth.currentUser) {
+        return;
+    }
+    
+    // คำนวณเวลาที่เหลือ (สมมติว่า lastActivity อยู่ใน auth.js)
+    // ในที่นี้เราจะแสดงเวลาประมาณ
+    const now = Date.now();
+    const lastActivity = window.lastActivity || now;
+    const timeSinceLastActivity = now - lastActivity;
+    const remainingTime = (timeout * 60 * 1000) - timeSinceLastActivity;
+    
+    if (remainingTime <= 0) {
+        return; // ระบบจะ logout อัตโนมัติ
+    }
+    
+    const remainingMinutes = Math.ceil(remainingTime / (60 * 1000));
+    
+    // สร้างหรืออัปเดต element แสดงเวลา
+    let timerElement = document.getElementById('autoLogoutTimer');
+    if (!timerElement) {
+        timerElement = document.createElement('div');
+        timerElement.id = 'autoLogoutTimer';
+        timerElement.className = 'position-fixed bottom-0 end-0 m-3 p-2 bg-warning text-dark rounded shadow';
+        timerElement.style.zIndex = '9999';
+        timerElement.style.fontSize = '0.8rem';
+        document.body.appendChild(timerElement);
+    }
+    
+    if (remainingMinutes <= 5) {
+        timerElement.className = 'position-fixed bottom-0 end-0 m-3 p-2 bg-danger text-white rounded shadow';
+        timerElement.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i>ออกจากระบบใน ${remainingMinutes} นาที`;
+    } else {
+        timerElement.className = 'position-fixed bottom-0 end-0 m-3 p-2 bg-info text-white rounded shadow';
+        timerElement.innerHTML = `<i class="fas fa-clock me-1"></i>เซสชันหมดใน ${remainingMinutes} นาที`;
+    }
+}
+
+// ฟังก์ชันสำหรับเริ่มต้นการแสดงเวลาที่เหลือ
+function startAutoLogoutTimerDisplay() {
+    // อัปเดตทุกนาที
+    autoLogoutTimerDisplay = setInterval(updateAutoLogoutTimerDisplay, 60000);
+    
+    // อัปเดตครั้งแรก
+    updateAutoLogoutTimerDisplay();
+}
+
+// ฟังก์ชันสำหรับหยุดการแสดงเวลาที่เหลือ
+function stopAutoLogoutTimerDisplay() {
+    if (autoLogoutTimerDisplay) {
+        clearInterval(autoLogoutTimerDisplay);
+        autoLogoutTimerDisplay = null;
+    }
+    
+    // ลบ element แสดงเวลา
+    const timerElement = document.getElementById('autoLogoutTimer');
+    if (timerElement) {
+        timerElement.remove();
+    }
+}
+
+// ฟังก์ชันสำหรับอัปเดต lastActivity เมื่อมีการใช้งาน
+function updateLastActivity() {
+    window.lastActivity = Date.now();
+}
+
+// ฟังก์ชันสำหรับตั้งค่า event listeners สำหรับตรวจจับการใช้งานในหน้า dashboard
+function setupDashboardActivityListeners() {
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    events.forEach(event => {
+        document.addEventListener(event, updateLastActivity, true);
+    });
+}

@@ -10,6 +10,12 @@ const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 นาที
 let lockoutTime = 0;
 
+// ตัวแปรสำหรับ Auto Logout
+let inactivityTimer = null;
+let sessionTimeout = 30; // นาที (ค่าเริ่มต้น)
+let autoLogoutEnabled = true; // เปิดใช้งาน Auto Logout (ค่าเริ่มต้น)
+let lastActivity = Date.now();
+
 // ฟังก์ชันสำหรับการตรวจสอบสถานะการเข้าสู่ระบบ
 function checkAuthState() {
     // ป้องกันการเรียกซ้ำ
@@ -22,6 +28,9 @@ function checkAuthState() {
             // ผู้ใช้เข้าสู่ระบบแล้ว
             currentUser = user;
             // ผู้ใช้เข้าสู่ระบบสำเร็จ
+            
+            // เริ่มต้น Auto Logout สำหรับผู้ใช้ที่เข้าสู่ระบบแล้ว
+            initAutoLogout();
             
             // ตรวจสอบว่าอยู่ในหน้าไหน
             const currentPage = window.location.pathname;
@@ -222,6 +231,9 @@ async function signUp(email, password, displayName) {
 // ฟังก์ชันสำหรับการออกจากระบบ
 async function signOut() {
     try {
+        // หยุด Auto Logout timer
+        stopAutoLogout();
+        
         await auth.signOut();
         showNotification('ออกจากระบบสำเร็จ', 'info');
         
@@ -492,6 +504,148 @@ function loadRememberMeState() {
     }
 }
 
+// ฟังก์ชันสำหรับเริ่มต้นระบบ Auto Logout
+function initAutoLogout() {
+    // โหลดการตั้งค่าจาก localStorage
+    loadAutoLogoutSettings();
+    
+    // เริ่มต้น inactivity timer
+    startInactivityTimer();
+    
+    // เพิ่ม event listeners สำหรับตรวจจับการใช้งาน
+    setupActivityListeners();
+}
+
+// ฟังก์ชันสำหรับโหลดการตั้งค่า Auto Logout
+function loadAutoLogoutSettings() {
+    try {
+        const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+        sessionTimeout = parseInt(userSettings.sessionTimeout) || 30;
+        autoLogoutEnabled = userSettings.autoLogout !== false; // เปิดใช้งานเป็นค่าเริ่มต้น
+    } catch (error) {
+        console.error('ข้อผิดพลาดในการโหลดการตั้งค่า Auto Logout:', error);
+    }
+}
+
+// ฟังก์ชันสำหรับเริ่มต้น inactivity timer
+function startInactivityTimer() {
+    if (!autoLogoutEnabled) {
+        return;
+    }
+    
+    // ล้าง timer เก่า
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+    
+    // คำนวณเวลาที่เหลือ
+    const timeSinceLastActivity = Date.now() - lastActivity;
+    const remainingTime = (sessionTimeout * 60 * 1000) - timeSinceLastActivity;
+    
+    if (remainingTime <= 0) {
+        // ถ้าเกินเวลาแล้ว ให้ logout ทันที
+        handleAutoLogout();
+        return;
+    }
+    
+    // ตั้ง timer ใหม่
+    inactivityTimer = setTimeout(() => {
+        handleAutoLogout();
+    }, remainingTime);
+    
+    // แสดงการแจ้งเตือนเมื่อเหลือเวลา 5 นาที
+    const warningTime = 5 * 60 * 1000; // 5 นาที
+    if (remainingTime > warningTime) {
+        setTimeout(() => {
+            if (autoLogoutEnabled && auth.currentUser) {
+                showNotification('ระบบจะออกจากระบบอัตโนมัติใน 5 นาที เนื่องจากไม่มีการใช้งาน', 'warning');
+            }
+        }, remainingTime - warningTime);
+    }
+}
+
+// ฟังก์ชันสำหรับจัดการ Auto Logout
+async function handleAutoLogout() {
+    if (!auth.currentUser) {
+        return;
+    }
+    
+    try {
+        showNotification('ออกจากระบบอัตโนมัติเนื่องจากไม่มีการใช้งาน', 'info');
+        
+        // ออกจากระบบ
+        await auth.signOut();
+        
+        // ล้าง timer
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = null;
+        }
+        
+        // ไปหน้า login
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
+        
+    } catch (error) {
+        console.error('ข้อผิดพลาดในการ Auto Logout:', error);
+    }
+}
+
+// ฟังก์ชันสำหรับตั้งค่า event listeners สำหรับตรวจจับการใช้งาน
+function setupActivityListeners() {
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    events.forEach(event => {
+        document.addEventListener(event, () => {
+            if (autoLogoutEnabled && auth.currentUser) {
+                lastActivity = Date.now();
+                startInactivityTimer();
+            }
+        }, true);
+    });
+    
+    // ตรวจจับเมื่อแท็บไม่ active
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            // แท็บไม่ active - หยุด timer
+            if (inactivityTimer) {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = null;
+            }
+        } else {
+            // แท็บ active อีกครั้ง - เริ่ม timer ใหม่
+            if (autoLogoutEnabled && auth.currentUser) {
+                startInactivityTimer();
+            }
+        }
+    });
+}
+
+// ฟังก์ชันสำหรับอัปเดตการตั้งค่า Auto Logout
+function updateAutoLogoutSettings(newSettings) {
+    if (newSettings.hasOwnProperty('sessionTimeout')) {
+        sessionTimeout = parseInt(newSettings.sessionTimeout) || 30;
+    }
+    
+    if (newSettings.hasOwnProperty('autoLogoutEnabled')) {
+        autoLogoutEnabled = newSettings.autoLogoutEnabled;
+    }
+    
+    // เริ่มต้น timer ใหม่ด้วยการตั้งค่าใหม่
+    if (auth.currentUser) {
+        startInactivityTimer();
+    }
+}
+
+// ฟังก์ชันสำหรับหยุด Auto Logout (เมื่อออกจากระบบ)
+function stopAutoLogout() {
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+    }
+}
+
 // เริ่มต้นระบบ Authentication
 document.addEventListener('DOMContentLoaded', () => {
     // รอให้ Firebase พร้อมใช้งาน
@@ -503,6 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupPasswordToggle();
         setupForgotPassword();
         loadRememberMeState(); // โหลดสถานะ "จดจำฉัน"
+        initAutoLogout(); // เริ่มต้น Auto Logout
     }, 100);
 });
 
@@ -512,5 +667,7 @@ window.authFunctions = {
     signUp,
     signOut,
     resetPassword,
-    currentUser: () => currentUser
+    currentUser: () => currentUser,
+    updateAutoLogoutSettings,
+    stopAutoLogout
 };
